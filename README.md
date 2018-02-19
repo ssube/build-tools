@@ -1,6 +1,6 @@
 # build-tools
 
-## CRUD for Gitlab on Kubernetes [1](#documentation)
+## CRUD for [Gitlab](https://about.gitlab.com/) on [Kubernetes](https://kubernetes.io/) [¹](#documentation)
 
 This repo has [Ansible roles](http://docs.ansible.com/ansible/latest/playbooks_reuse_roles.html) and
 [Terraform modules](https://www.terraform.io/docs/modules/usage.html) to set up a Gitlab CI cluster and supporting
@@ -77,7 +77,7 @@ setup scales well from small, personal projects to company clusters.
 
 ### Documentation
 
-This project is not a replacement for reading the documentation. Kubernetes and Gitlab both offer excellent
+¹: This project is not a replacement for reading the documentation. Kubernetes and Gitlab both offer excellent
 documentation. To get comfortable with the concepts used here, check out:
 
 - [Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/plans/userguide/what-is-aws-auto-scaling.html)
