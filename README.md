@@ -39,6 +39,7 @@ The following tools will be set up within the cluster:
 With the following SaaS tools in support:
 
 - [Foxpass](https://www.foxpass.com/)
+- [Grafana](https://grafana.com/)
 - [Papertrail](https://papertrailapp.com/)
 - [Sentry](https://sentry.io/)
 
