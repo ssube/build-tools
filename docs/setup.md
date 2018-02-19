@@ -85,7 +85,7 @@ user needs the following policy for the root zone:
 
 ### Other Hosts
 
-The playbook is able to provision remote hosts, with or without Kubernetes. These should be running a recent version
+The roles are able to provision remote hosts, with or without Kubernetes. These should be running a recent version
 of Ubuntu and have SSH access set up from the host you'll be using.
 
 If these hosts will be used as standalone Kubernetes clusters, they should be initialized with `kubeadm` before running
@@ -98,125 +98,25 @@ $ kubectl taint nodes --all node-role.kubernetes.io/master-
 node "master-1" untainted
 ```
 
+#### Network
+
 The Kubernetes networking layer can be sensitive to ISP network configuration, so be careful setting up clusters on
-dedicated servers. Weave networking seems work in some situations where Calico does not, such as SoYouStart hosts.
-There is a role to install Weave located in [roles/kubectl/weave](roles/kubectl/weave).
- **Do not** run this role on Kops AWS clusters.
+dedicated servers. Weave networking seems work in some situations where Calico does not, like on my
+[So you Start](https://www.soyoustart.com/us/) host.
+
+There is a role to install Weave located in [roles/kubectl/weave](roles/kubectl/weave). **Do not** run this role on
+a kops AWS clusters, it **will break your network**.
 
 ## Config
 
-This project provides some roles, but does not contain the playbook or secrets necessary to run. To get set up, you
-will need:
+This project provides Ansible roles, but does not provide a playbook or [inventory](http://docs.ansible.com/ansible/latest/intro_inventory.html) to run them. Both of these are specific to your
+environment, so detailed docs are provided in [the `config` docs](config.md).
 
-```none
-example-net/
-  inventory/
-  keyrings/
-  roles/
-  secrets/
-    prod/
-    test/
-  ansible.cfg
-  Makefile
-  requirements.yml
-  site.yml
-```
+Before continuing, be sure to set up:
 
-Each section, directory or file, is broken down below.
-
-### Inventory Config
-
-The `inventory/` directory should contain [your inventory](http://docs.ansible.com/ansible/latest/intro_inventory.html)
-with existing hosts and clusters. It must contain a `local` host and `all` group:
-
-```yaml
-all:
-  hosts:
-    local:
-      ansible_connection: local
-    dedicated-host:
-      ansible_host: xx.yy.zz.ww
-      ansible_user: not-root
-      ansible_becoe: true
-      ansible_become_method: sudo
-  # groups
-  children:
-    remote:
-      hosts:
-        dedicated-host:
-    aws-cluster:
-      hosts:
-        local:
-      vars:
-        cluster_services:
-          - name: log
-          - name: gitlab
-```
-
-### Keyring Config
-
-The `keyring/` directory is created and managed by BlackBox. Follow [their instructions](https://github.com/StackExchange/blackbox#enabling-blackbox-for-a-repo)
-to set up the repository:
-
-```shell
-$ blackbox_initialize
-
-$ blackbox_addadmin ABCDEF1234
-
-$ blackbox_register_new_file inventory/* secrets/{prod,test}/*
-```
-
-This keep your connections and secrets encrypted. BlackBox will automatically add files to `.gitignore` when
-they are registered.
-
-### Secrets Config
-
-The `secrets/` directory contains your secrets. All `.yml` files will be loaded.
-
-**TODO:** secrets template
-
-### Ansible Config
-
-The `ansible.cfg` sets options for `ansible-playbook`, especially the local `roles` directory.
-
-```ini
-[defaults]
-
-role_path = ./roles
-```
-
-### Make Config
-
-The `Makefile` should `include` the role's makefile (gracefully handling a clean checkout) and provide any extra
-targets you might need:
-
-```make
-include $(shell find ./roles -name Makefile)
-
-galaxy-install: ## install galaxy roles
-	ansible-galaxy install -r requirements.yml
-
-galaxy-update: ## update galaxy roles
-	ansible-galaxy install -r requirements.yml --force
-```
-
-These targets will be included in `make help` with any text in the `## comment`.
-
-### Requirements Config
-
-The `requirements.yml` includes the project's repository and version. You can pin a version (git tag) or follow the
-stable branch:
-
-```yaml
-- src: git+https://github.com/ssube/build-tools.git
-  version: master
-```
-
-### Site Config
-
-The `site.yml` playbook attaches roles to hosts.
-
-**TODO:** example playbook
+1. [inventory](config.md#inventory)
+1. [secrets](config.md#secrets)
+1. [requirements](config.md#requirements)
 
 ## Cluster
 
