@@ -37,3 +37,4 @@
     # pip first, then sorted
     - awscli
     - boto
+    - yq
