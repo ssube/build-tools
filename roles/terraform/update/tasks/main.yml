@@ -2,6 +2,7 @@
 
 - name: terraform root
   check_mode: no
+  tags: always
   file:
     state: directory
     path: "{{ output_dir.path }}/{{ item }}"
@@ -10,12 +11,18 @@
     - tf-root
 
 - name: terraform modules
+  check_mode: no
+  tags: always
   set_fact:
     terraform_module: "{{ role_path }}/../../../terraform/modules"
     terraform_root: "{{ output_dir.path }}/tf-root"
 
 - name: template tfvars
   check_mode: no
+  tags:
+    - cloud-create
+    - cloud-ready
+    - cloud-update
   template:
     src: "{{item}}"
     dest: "{{ terraform_root }}/{{item}}"
@@ -30,25 +37,15 @@
     - module.tf
     - provider.tf
       
-- name: init terraform
+- name: plan terraform
   check_mode: no
   environment: &tf-env
     TF_PATH: "{{ terraform_root }}"
     TF_STATE: "{{ terraform_root }}/state.tfvars"
     TF_VARS: "{{ terraform_root }}/env.tfvars"
-  shell: make terraform-create
-  register: output_terraform_init
-
-- name: init terraform output
-  debug:
-    var: output_terraform_init.stdout_lines
-
-- name: plan terraform
-  check_mode: no
-  environment: *tf-env
   tags:
     - cloud-ready
-  shell: make terraform-ready
+  shell: make terraform-create terraform-ready
   register: output_terraform_run
 
 - name: apply terraform
@@ -58,9 +55,13 @@
   tags:
     - cloud-create
     - cloud-update
-  shell: make terraform-update
+  shell: make terraform-create terraform-update
   register: output_terraform_run
 
 - name: terraform output
+  tags:
+    - cloud-create
+    - cloud-ready
+    - cloud-update
   debug:
     var: output_terraform_run.stdout_lines

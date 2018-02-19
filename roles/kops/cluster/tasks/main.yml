@@ -2,6 +2,7 @@
  
 - name: cluster path
   check_mode: no
+  tags: always
   file:
     state: directory
     path: "{{ output_dir.path }}/tf-cluster"
@@ -20,7 +21,7 @@
     KOPS_DEFINITION: "{{output_dir.path}}/k8s-cluster.yml"
     KOPS_MODULE: "{{output_dir.path}}/tf-cluster"
   tags:
-    - cluster-create
+    - never-do
   shell: make kops-create
   register: cluster_output
 
@@ -33,6 +34,7 @@
 
 - name: cluster output
   tags:
+    - cluster-create
     - cluster-update
   debug:
     var: cluster_output

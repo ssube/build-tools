@@ -29,40 +29,30 @@ cluster:
         zone: "{{secrets.region.primary}}c"
 
   policy:
-    master: |
-      [{
-        "Effect": "Allow",
-        "Action": [
-          "autoscaling:*",
-          "ec2:*",
-          "route53:*",
-          "s3:*"
-        ],
-        "Resource": [
-          "*"
-        ]
-      }]
+    master:
+      - Effect: Allow
+        Action:
+          - autoscaling:*
+          - ec2:*
+          - route53:*
+          - s3:*
+        Resource: ["*"]
 
     # this is a very loose policy, allowing the nodes to run this playbook
-    node: |
-      [{
-        "Effect": "Allow",
-        "Action": [
-          "acm:ListCertificates",
-          "autoscaling:*",
-          "cloudfront:*",
-          "dynamodb:*",
-          "ec2:*",
-          "elasticache:*",
-          "iam:*",
-          "rds:*",
-          "route53:*",
-          "s3:*"
-        ],
-        "Resource": [
-          "*"
-        ]
-      }]
+    node:
+      - Effect: Allow
+        Action:
+          - acm:ListCertificates
+          - autoscaling:*
+          - cloudfront:*
+          - dynamodb:*
+          - ec2:*
+          - elasticache:*
+          - iam:*
+          - rds:*
+          - route53:*
+          - s3:*
+        Resource: ["*"]
 
   master:
     # size is for each zone, masters are evenly distributed

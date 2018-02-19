@@ -2,12 +2,14 @@
 
 - name: set secrets path
   check_mode: no
+  tags: always
   #
   set_fact:
     secrets_path: "{{playbook_dir}}/secrets/{{deploy_env}}/vars.yml"
 
 - name: debug secrets path
   check_mode: no
+  tags: always
   debug:
     var: secrets_path
 
@@ -15,6 +17,7 @@
   check_mode: no
   delegate_to: local
   delegate_facts: false
+  tags: always
   #
   include_vars:
     file: "{{secrets_path}}"
@@ -23,6 +26,7 @@
   delegate_to: local
   delegate_facts: true
   run_once: true
+  tags: always
   # aws credentials
   environment:
     AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"

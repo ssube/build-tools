@@ -2,7 +2,7 @@
 
 - name: create output directory
   check_mode: no
-  # TODO
+  tags: always
   file:
     state: directory
     path: "/tmp/{{deploy_project}}"
@@ -10,5 +10,6 @@
 
 - name: debug output directory
   check_mode: no
+  tags: always
   debug:
     var: output_dir

@@ -5,15 +5,15 @@ metadata:
   name: {{cluster.project}}.{{cluster.dns}}
 spec:
   additionalPolicies:
-    master: {{cluster.policy.master}}
-    node: {{cluster.policy.node}}
+    master: '{{cluster.policy.master | tojson}}'
+    node: '{{cluster.policy.node | tojson}}'
   api:
     dns: {}
   authorization:
     alwaysAllow: {}
   channel: stable
   cloudProvider: aws
-  configBase: {{cluster.bucket}}/{{cluster.project}}.{{cluster.dns}}
+  configBase: s3://{{cluster.bucket}}/{{cluster.project}}.{{cluster.dns}}
   dnsZone: {{cluster_zone.result.zone_id}}
   etcdClusters:
   - etcdMembers:
@@ -44,7 +44,7 @@ spec:
   nonMasqueradeCIDR: {{cluster.network.nonmasquerade}}
   sshAccess:
   - {{cluster.network.access}}
-  subnets: {{cluster.network.subnets}}
+  subnets: {{cluster.network.subnets | tojson}}
   topology:
     dns:
       type: Public

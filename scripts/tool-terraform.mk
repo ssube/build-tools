@@ -8,7 +8,7 @@ TF_VARS				?= $(ROOT_PATH)/secrets/$(DEPLOY_ENV)/env.tfvars
 
 ## CRUD
 terraform-create: ## initialize the terraform backend
-	$(PREFIX_CMD) terraform init -backend -backend-config=$(TF_STATE) -get $(TF_PATH)
+	$(PREFIX_CMD) terraform init -backend -backend-config=$(TF_STATE) -get=true $(TF_PATH)
 
 terraform-delete: ## delete the terraform infrastructure
 	$(PREFIX_CMD) terraform delete -var-file=$(TF_VARS) $(TF_PATH)
