@@ -1,3 +1,10 @@
+# secret dirs
+inventory/
+keyrings/
+secrets/
+*.gpg
+
+# temp files
 site.retry
 .terraform
 *.swp
