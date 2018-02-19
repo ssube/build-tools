@@ -24,6 +24,9 @@ automatically shut down after 10 minutes idle and cost about 25% as much as on-d
 
 Additional clusters can be included and the playbook is able to load context from kubeadm and kops.
 
+Most of the tasks are system-independent and only require `make` and the tools used by the stage, but the
+dependencies stage requires Ubuntu 16.04 or better. The latest Ubuntu LTS AMI is used for the kops nodes.
+
 ### Cluster Tools
 
 The following tools will be set up within the cluster:
@@ -59,11 +62,11 @@ The following tools are used locally to set up the cluster:
 - [terraform](https://www.terraform.io/)
 
 Some of these should be installed before running, some can be installed by the Ansible playbook. Please see
-[the setup guide § prerequisites](docs/setup.md#prerequisites) for details.
+[the setup guide § dependencies](docs/setup.md#dependencies) for details.
 
 ## Where
 
-The resources created by this project will be in [AWS](https://aws.amazon.com).
+The resources created by this project will be in [Amazon AWS](https://aws.amazon.com).
 
 You may provide your own kubernetes clusters (provisioned with kops or kubeadm) and allocate some services there,
 although the core services (Gitlab, DNS, and autoscaling) are only supported in AWS clusters.

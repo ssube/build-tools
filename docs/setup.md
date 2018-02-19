@@ -26,13 +26,14 @@ work with HTTP proxies, but you can run the playbook from a bastion host in your
 
 Generally speaking, if you can run all of the tools and SSH into each of the boxes, this playbook should work.
 
-## Prerequisites
+## Dependencies
 
-### Local
+### Tools
 
-This project has a few local dependencies, including:
+This project has a few dependencies, including:
 
 1. ansible
+1. blackbox
 1. kops
 1. kubectl
 1. make
@@ -56,16 +57,8 @@ Using a GPG card for this, [like a Yubikey](https://www.yubico.com/), is a very 
 
 #### Accounts
 
-The playbook and Terraform resources assume you have an AWS organization with at least 3 accounts:
-
-1. root
-1. test
-1. prod
-
-**TODO:** make/make sure it's possible to run with a single AWS account
-
-You should have credentials set up for each account with a named profile, prefixed with the project name
-(`project-name-prod`). The playbook will create STS sessions as needed and does not copy your credentials to other hosts.
+The playbook and Terraform resources assume you have AWS profiles set up. These may point at the same account or not,
+tasks that need access to AWS use an STS session created at the beginning of the playbook.
 
 #### DNS
 
@@ -102,7 +95,7 @@ should be removed](https://kubernetes.io/docs/setup/independent/create-cluster-k
 ```shell
 $ kubectl taint nodes --all node-role.kubernetes.io/master-
 
-node "iron-1" untainted
+node "master-1" untainted
 ```
 
 The Kubernetes networking layer can be sensitive to ISP network configuration, so be careful setting up clusters on
@@ -112,7 +105,118 @@ There is a role to install Weave located in [roles/kubectl/weave](roles/kubectl/
 
 ## Config
 
-Make a copy of [the vars file](vars/everything.yml) and replace with your own environment variables.
+This project provides some roles, but does not contain the playbook or secrets necessary to run. To get set up, you
+will need:
+
+```none
+example-net/
+  inventory/
+  keyrings/
+  roles/
+  secrets/
+    prod/
+    test/
+  ansible.cfg
+  Makefile
+  requirements.yml
+  site.yml
+```
+
+Each section, directory or file, is broken down below.
+
+### Inventory Config
+
+The `inventory/` directory should contain [your inventory](http://docs.ansible.com/ansible/latest/intro_inventory.html)
+with existing hosts and clusters. It must contain a `local` host and `all` group:
+
+```yaml
+all:
+  hosts:
+    local:
+      ansible_connection: local
+    dedicated-host:
+      ansible_host: xx.yy.zz.ww
+      ansible_user: not-root
+      ansible_becoe: true
+      ansible_become_method: sudo
+  # groups
+  children:
+    remote:
+      hosts:
+        dedicated-host:
+    aws-cluster:
+      hosts:
+        local:
+      vars:
+        cluster_services:
+          - name: log
+          - name: gitlab
+```
+
+### Keyring Config
+
+The `keyring/` directory is created and managed by BlackBox. Follow [their instructions](https://github.com/StackExchange/blackbox#enabling-blackbox-for-a-repo)
+to set up the repository:
+
+```shell
+$ blackbox_initialize
+
+$ blackbox_addadmin ABCDEF1234
+
+$ blackbox_register_new_file inventory/* secrets/{prod,test}/*
+```
+
+This keep your connections and secrets encrypted. BlackBox will automatically add files to `.gitignore` when
+they are registered.
+
+### Secrets Config
+
+The `secrets/` directory contains your secrets. All `.yml` files will be loaded.
+
+**TODO:** secrets template
+
+### Ansible Config
+
+The `ansible.cfg` sets options for `ansible-playbook`, especially the local `roles` directory.
+
+```ini
+[defaults]
+
+role_path = ./roles
+```
+
+### Make Config
+
+The `Makefile` should `include` the role's makefile (gracefully handling a clean checkout) and provide any extra
+targets you might need:
+
+```make
+include $(shell find ./roles -name Makefile)
+
+galaxy-install: ## install galaxy roles
+	ansible-galaxy install -r requirements.yml
+
+galaxy-update: ## update galaxy roles
+	ansible-galaxy install -r requirements.yml --force
+```
+
+These targets will be included in `make help` with any text in the `## comment`.
+
+### Requirements Config
+
+The `requirements.yml` includes the project's repository and version. You can pin a version (git tag) or follow the
+stable branch:
+
+```yaml
+- src: git+https://github.com/ssube/build-tools.git
+  version: master
+```
+
+### Site Config
+
+The `site.yml` playbook attaches roles to hosts.
+
+**TODO:** example playbook
 
 ## Cluster
 
