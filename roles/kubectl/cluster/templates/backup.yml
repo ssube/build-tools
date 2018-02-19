@@ -16,6 +16,9 @@ spec:
           labels:
             app: gitlab
         spec:
+          nodeSelector:
+            cluster: server
+          restartPolicy: OnFailure
           containers:
             - name: gitlab-backup
               image: apextoaster/kube
@@ -26,8 +29,5 @@ spec:
                   set -euxo pipefail;
                   echo "Starting backup: $(date)";
                   kubectl get pods -o wide;
-                  kubectl exec gitlab-0 -- gitlab-rake gitlab:backup:create SKIP=builds,artifacts,lfs,registry
+                  kubectl exec gitlab-0 -- gitlab-rake gitlab:backup:create SKIP=artifacts,builds,registry
                   echo "Finished backup: $(date)";
-          restartPolicy: OnFailure
-          nodeSelector:
-            cluster: server

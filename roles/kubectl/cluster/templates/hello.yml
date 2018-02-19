@@ -36,7 +36,7 @@ metadata:
     app: "hello-nginx"
 spec:
   ports:
-    - name: "tcp-80-8080-vlq7x"
+    - name: http
       protocol: "TCP"
       port: 80
       targetPort: 80

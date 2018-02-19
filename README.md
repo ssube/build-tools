@@ -6,6 +6,9 @@ This repo has [Ansible roles](http://docs.ansible.com/ansible/latest/playbooks_r
 [Terraform modules](https://www.terraform.io/docs/modules/usage.html) to set up a Gitlab CI cluster and supporting
 services.
 
+Everything is wrapped with `make` targets to `create`, `ready` (validate), `update`, and eventually `delete` the
+resources. The cluster is set up in stages: `cluster`, `cloud`, and finally `service`s.
+
 **Alpha:** this project works for me and I'd like to share, but may not work for you. Maybe not at all.
 Please open issues if you see anything, or just with questions or suggestions.
 
