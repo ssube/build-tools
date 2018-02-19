@@ -80,6 +80,12 @@ Plan: 2 to add, 0 to change, 1 to destroy.
 
 Note that `account_user` was renamed to `user_user`, without changing any attributes in this case.
 
-To work around this, download the Terraform state from S3, rename the resource in place, and upload. The plan should
-shows updates (if any) rather than creating a new resource. The state bucket is versioned, so this is relatively safe,
-but be careful editing state by hand.
+To fix this:
+
+1. download the Terraform state from S3
+1. rename the resource in place
+1. upload the state, replacing the existing file
+
+The plan should shows updates (if any) rather than creating a new resource. The state bucket is versioned, so this is
+relatively safe, but be careful editing state by hand. `cat terraform.tfstate | jq` is a great way to validate before
+you upload.
