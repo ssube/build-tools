@@ -1,0 +1,42 @@
+concurrent = 4
+check_interval = 15
+
+[[runners]]
+  name = "runner"
+  url = "https://git.{{secrets.tags.project}}.{{secrets.dns.base}}"
+  token = "TOKEN"
+  executor = "kubernetes"
+
+  builds_dir = "/build/src/git.{{secrets.tags.project}}.{{secrets.dns.base}}"
+  cache_dir = "/cache"
+
+  [runners.cache]
+    Type = "s3"
+    ServerAddress = "s3-{{output.region.primary}}.amazonaws.com"
+    AccessKey = "{{output.runner.cache.user.access_key}}"
+    SecretKey = "{{output.runner.cache.user.secret_key}}"
+    BucketName = "{{output.runner.cache.bucket.primary}}"
+    Shared = true
+
+  [runners.kubernetes]
+    host = ""
+    image = "apextoaster/base"
+    namespace = "default"
+    namespace_overwrite_allowed = ""
+    poll_interval = 15
+    poll_timeout = 600
+    privileged = true
+    service_account_overwrite_allowed = ""
+
+    [runners.kubernetes.node_selector]
+      gitlab = "runner"
+
+    [[runners.kubernetes.volumes.empty_dir]]
+      name = "build"
+      mount_path = "/build"
+      medium = "Memory"
+      
+    [[runners.kubernetes.volumes.secret]]
+      name = "gitlab-runner-secrets"
+      mount_path = "/secrets"
+      read_only = true

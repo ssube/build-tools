@@ -1,0 +1,51 @@
+---
+
+- name: cluster vpc
+  # run locally, share facts
+  <<: &run_locally
+    check_mode: no
+    delegate_to: local
+    delegate_facts: true
+    run_once: true
+  # aws credentials
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key_id}}"
+    AWS_SESSION_TOKEN: "{{aws_session_token}}"
+    AWS_REGION: "{{secrets.region.primary}}"
+  # TODO
+  ec2_vpc_net:
+    cidr_block: "{{cluster.network.cidr}}"
+    dns_hostnames: yes
+    dns_support: yes
+    name: "{{cluster.name}}"
+    tags:
+      account: "{{secrets.tags.account}}"
+      environment: "{{secrets.tags.environment}}"
+      owner: "{{secrets.tags.owner}}"
+      project: "{{secrets.tags.project}}"
+  register: cluster_vpc
+
+- name: debug cluster vpc
+  <<: *run_locally
+  debug:
+    var: cluster_vpc
+
+- name: cluster zone
+  <<: *run_locally
+  # aws credentials
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key_id}}"
+    AWS_SESSION_TOKEN: "{{aws_session_token}}"
+    AWS_REGION: "{{secrets.region.primary}}"
+  # TODO
+  route53_zone:
+    zone: "{{cluster.name}}"
+    state: present
+  register: cluster_zone
+
+- name: debug cluster zone
+  <<: *run_locally
+  debug:
+    var: cluster_zone

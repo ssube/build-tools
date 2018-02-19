@@ -1,0 +1,27 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-dns
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: cluster-dns
+    spec:
+      containers:
+        - name: cluster-dns
+          image: registry.opensource.zalan.do/teapot/external-dns:v0.4.8
+          args:
+          - --source=service
+          - --source=ingress
+          - --domain-filter={{cluster.project}}.{{cluster.dns}}
+          - --provider=aws
+          - --policy=upsert-only
+          - --registry=txt
+          - --txt-owner-id={{cluster.project}}.{{cluster.dns}}
+      nodeSelector:
+        cluster: server

@@ -1,0 +1,145 @@
+---
+
+kind: StatefulSet
+apiVersion: apps/v1beta2
+metadata:
+  name: gitlab
+spec:
+  selector:
+    matchLabels:
+      app: gitlab
+  serviceName: gitlab
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gitlab
+    spec:
+      containers:
+      - name: gitlab
+        image: gitlab/gitlab-{{gitlab.edition}}:{{gitlab.version}}-{{gitlab.edition}}.0
+        livenessProbe:
+          httpGet:
+            path: /-/liveness
+            port: http
+          initialDelaySeconds: 180
+          periodSeconds: 90
+        readinessProbe:
+          httpGet:
+            path: /-/readiness
+            port: http
+          initialDelaySeconds: 180
+          periodSeconds: 90
+        ports:
+        - containerPort: 22
+          name: ssh
+        - containerPort: 80
+          name: http
+        volumeMounts: &gitlab_volumes
+{% for name, body in gitlab.assets.iteritems() %}
+        - name: gitlab-assets
+          mountPath: /assets/{{body.path | default(name)}}
+          subPath: {{name}}
+{% endfor %}
+        - name: gitlab-config
+          mountPath: /etc/gitlab
+        - name: gitlab-data
+          mountPath: /data
+      initContainers:
+      - name: gitlab-init
+        image: busybox
+        command:
+        - sh
+        - -c
+        - |
+          export DATA_PATH="{{secrets.gitlab.data}}";
+          if [[ ! -d "${DATA_PATH}" ]];
+          then
+            mkdir -p "${DATA_PATH}";
+          fi;
+          chown 988:0 "${DATA_PATH}";
+        volumeMounts: *gitlab_volumes
+      nodeSelector:
+        cluster: server
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: gitlab-config
+        secret:
+          secretName: gitlab-config
+          items:
+{% for name, body in gitlab.config.iteritems() %}
+          - key: {{name}}
+            mode: {{body.mode}}
+            path: {{body.path | default(name)}}
+{% endfor %}
+      - name: gitlab-assets
+        secret:
+          secretName: gitlab-assets
+          items:
+{% for name, body in gitlab.assets.iteritems() %}
+          - key: {{name}}
+            mode: {{body.mode}}
+            path: {{body.path | default(name)}}
+{% endfor %}
+
+  volumeClaimTemplates:
+  - metadata:
+      name: gitlab-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 20Gi
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: gitlab
+  labels:
+    app: gitlab
+    dns: route53
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "git.{{cluster.project}}.{{cluster.dns}}."
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: {{secrets.gitlab.cert}}
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+spec:
+  ports:
+  - name: ssh
+    protocol: TCP
+    port: 22
+    targetPort: ssh
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: http
+  selector:
+    app: gitlab
+  type: LoadBalancer
+
+---
+
+kind: Secret
+apiVersion: v1
+metadata:
+  name: gitlab-config
+type: Opaque
+data:
+{% for name, body in gitlab.config.iteritems() %}
+  {{name}}: {{body.value | b64encode}}
+{% endfor %}
+
+---
+
+kind: Secret
+apiVersion: v1
+metadata:
+  name: gitlab-assets
+type: Opaque
+data:
+{% for name, body in gitlab.assets.iteritems() %}
+  {{name}}: {{body.value | b64encode}}
+{% endfor %}

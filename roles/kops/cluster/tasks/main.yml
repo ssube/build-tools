@@ -1,0 +1,37 @@
+---
+  
+- name: template cluster
+  tags:
+    - cluster-create
+    - cluster-update
+  template:
+    src: cluster.yml
+    dest: "{{output_dir.path}}/k8s-cluster.yml"
+
+- name: create cluster
+  tags:
+    - cluster-create
+  environment:
+    KOPS_DEFINITION: "{{output_dir.path}}/k8s-cluster.yml"
+  shell: make kops-create
+  register: output_create_cluster
+
+- name: create cluster output
+  tags:
+    - cluster-create
+  debug:
+    var: output_create_cluster
+
+- name: replace cluster
+  tags:
+    - cluster-update
+  environment:
+    KOPS_DEFINITION: "{{output_dir.path}}/k8s-cluster.yml"
+  shell: make kops-update
+  register: output_replace_cluster
+
+- name: replace cluster output
+  tags:
+    - cluster-update
+  debug:
+    var: output_replace_cluster

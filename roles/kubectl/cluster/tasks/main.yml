@@ -1,0 +1,29 @@
+---
+
+- name: download dashboard
+  tags: always
+  # TODO
+  get_url:
+    url: https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+    dest: "{{output_dir.path}}/k8s-dashboard.yml"
+
+- name: apply dashboard
+  tags:
+    - service-create
+    - service-update
+  shell: kubectl --kubeconfig "{{ context_path }}" apply -f {{output_dir.path}}/k8s-dashboard.yml
+
+- name: template services
+  tags: always
+  # TODO
+  template:
+    src: "{{item.name}}.yml"
+    dest: "{{output_dir.path}}/k8s-{{item.name}}.yml"
+  with_items: "{{cluster_services}}"
+
+- name: apply services
+  tags:
+    - service-create
+    - service-update
+  shell: kubectl --kubeconfig "{{ context_path }}" apply -f {{output_dir.path}}/k8s-{{item.name}}.yml
+  with_items: "{{cluster_services}}"

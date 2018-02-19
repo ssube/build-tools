@@ -1,0 +1,116 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: {{cluster.timestamp}}
+  name: {{cluster.project}}.{{cluster.dns}}
+spec:
+  additionalPolicies:
+    master: {{cluster.policy.master}}
+    node: {{cluster.policy.node}}
+  api:
+    dns: {}
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: {{cluster.bucket}}/{{cluster.project}}.{{cluster.dns}}
+  dnsZone: {{cluster_zone.result.zone_id}}
+  etcdClusters:
+  - etcdMembers:
+{% for zone in cluster.master.zones %}
+    - instanceGroup: {{zone}}-masters
+      name: main-master-{{zone[-1]}}
+{% endfor %}
+    name: main
+  - etcdMembers:
+{% for zone in cluster.master.zones %}
+    - instanceGroup: {{zone}}-masters
+      name: events-master-{{zone[-1]}}
+{% endfor %}
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesApiAccess:
+  - {{cluster.network.access}}
+  kubernetesVersion: {{cluster.version}}
+  masterInternalName: api.internal.{{cluster.project}}.{{cluster.dns}}
+  masterPublicName: api.{{cluster.project}}.{{cluster.dns}}
+  networkCIDR: {{cluster.network.cidr}}
+  networkID: {{cluster_vpc.vpc.id}}
+  networking:
+    weave:
+      mtu: 8912
+  nonMasqueradeCIDR: {{cluster.network.nonmasquerade}}
+  sshAccess:
+  - {{cluster.network.access}}
+  subnets: {{cluster.network.subnets}}
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+{% for zone in cluster.master.zones %}
+---
+# auto-generated master group for zone {{zone}}
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: {{cluster.timestamp}}
+  labels:
+    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns}}
+  name: {{zone}}-masters
+spec:
+  image: {{cluster.image}}
+  machineType: {{cluster.master.type}}
+  maxSize: {{cluster.master.size.max}}
+  minSize: {{cluster.master.size.min}}
+  cloudLabels:
+{% for k, v in secrets.tags.iteritems() %}
+    {{k}}: "{{v}}"
+{% endfor %}
+  nodeLabels:
+    cluster: master
+  role: Master
+  rootVolumeSize: 40
+  rootVolumeType: gp2
+  subnets:
+  - {{zone}}
+
+{% endfor %}
+{% for ig in cluster.nodes %}
+---
+# auto-generated node group for {{ig.name}}
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: {{cluster.timestamp}}
+  labels:
+    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns}}
+  name: {{ig.name}}-nodes
+spec:
+  image: {{cluster.image}}
+  machineType: {{ig.type}}
+{% if 'spot' in ig %}
+  maxPrice: "{{ig.spot}}"
+{% endif %}
+  maxSize: {{ig.size.max}}
+  minSize: {{ig.size.min}}
+  cloudLabels:
+{% for k, v in secrets.tags.iteritems() %}
+    {{k}}: "{{v}}"
+{% endfor %}
+  nodeLabels:
+{% for k, v in ig.tags.iteritems() %}
+    {{k}}: "{{v}}"
+{% endfor %}
+  role: Node
+  rootVolumeSize: 40
+  rootVolumeType: gp2
+  subnets:
+  - {{secrets.region.primary}}a
+
+{% endfor %}

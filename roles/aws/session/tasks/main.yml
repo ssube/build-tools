@@ -1,0 +1,38 @@
+---
+
+- name: load aws credentials
+  # run locally, do not share facts
+  <<: &run_locally
+    check_mode: no
+    delegate_to: local
+    delegate_facts: true
+    run_once: true
+  # create a new sts session
+  shell: aws sts get-session-token --profile {{deploy_project}}-{{deploy_env}}
+  register: aws_token_raw
+
+- name: parse aws credentials
+  # run locally, share facts with other hosts
+  <<: &run_dist
+    check_mode: no
+    delegate_to: local
+    delegate_facts: false
+    run_once: true
+  # parse the sts session and save fields
+  set_fact:
+    aws_access_key_id: "{{item.Credentials.AccessKeyId}}"
+    aws_secret_key_id: "{{item.Credentials.SecretAccessKey}}"
+    aws_session_token: "{{item.Credentials.SessionToken}}"
+  with_items:
+  - "{{aws_token_raw.stdout | from_json}}"
+
+- name: debug aws credentials
+  tags:
+    - debug
+  <<: *run_locally
+  debug:
+    msg: |
+      aws_access_key_id: {{aws_access_key_id}}
+      aws_secret_key_id: {{aws_secret_key_id}}
+      aws_session_token: {{aws_session_token}}
+      aws_token_raw: {{aws_token_raw}}

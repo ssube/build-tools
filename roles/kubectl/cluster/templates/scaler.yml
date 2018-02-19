@@ -1,0 +1,55 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-scaler
+  namespace: kube-system
+  labels:
+    app: cluster-scaler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-scaler
+  template:
+    metadata:
+      labels:
+        app: cluster-scaler
+    spec:
+      containers:
+        - image: gcr.io/google_containers/cluster-autoscaler:v1.0.3
+          name: cluster-scaler
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - ./cluster-autoscaler
+            - --v=4
+            - --scale-down-unneeded-time=5m
+            - --stderrthreshold=info
+            - --cloud-provider=aws
+            - --skip-nodes-with-local-storage=false
+{% for ig in cluster.nodes %}
+{% if 'auto' in ig %}
+            - --nodes={{ig.size.min}}:{{ig.size.max}}:{{ig.name}}-nodes.{{cluster.project}}.{{cluster.dns}}
+{% endif %}
+{% endfor %}
+          env:
+            - name: AWS_REGION
+              value: {{output.region.primary}}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              readOnly: true
+          imagePullPolicy: "Always"
+      nodeSelector:
+        cluster: server
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs/ca-certificates.crt"

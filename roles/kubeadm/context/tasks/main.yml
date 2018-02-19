@@ -1,0 +1,31 @@
+---
+
+- name: set k8s context path
+  set_fact:
+    context_path: "{{output_dir.path}}/{{inventory_hostname}}-context.yml"
+
+- name: fetch k8s context
+  check_mode: no
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ context_path }}"
+    fail_on_missing: yes
+    flat: yes
+
+- name: copy k8s context
+  check_mode: no
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ context_path }}"
+    remote_src: yes
+
+- name: load k8s context
+  check_mode: no
+  include_vars:
+    file: "{{ context_path }}"
+    name: context
+
+- name: debug k8s context
+  check_mode: no
+  debug:
+    var: context

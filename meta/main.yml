@@ -1,0 +1,18 @@
+---
+
+galaxy_info:
+  author: ssube
+  description: create a k8s cluster with CI tools
+  license: MIT
+  min_ansible_version: 2.4
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - kubernetes
+    - gitlab
+    - aws
+    - kops
+    - kubeadm
+    - kubectl

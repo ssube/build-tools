@@ -1,0 +1,39 @@
+---
+
+- name: update packages
+  become: yes
+  become_method: sudo
+  apt:
+    autoremove: yes
+    upgrade: dist
+
+- name: install packages
+  become: yes
+  become_method: sudo
+  apt:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - apt-transport-https
+    - curl
+    - git
+    - jq
+    - libpython-dev
+    - libssl-dev
+    - python
+    - python-pip
+    - resolvconf
+    - unzip
+    - vim
+
+- name: install pip packages
+  become: yes
+  become_method: sudo
+  pip:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - pip
+    # pip first, then sorted
+    - awscli
+    - boto

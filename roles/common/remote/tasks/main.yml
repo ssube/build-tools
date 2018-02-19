@@ -1,0 +1,35 @@
+---
+- name: update packages
+  apt:
+    autoremove: yes
+    upgrade: dist
+- name: install packages
+  apt:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - prometheus-node-exporter
+- name: secure sshd
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^{{item.name}} "
+    line: "{{item.name}} {{item.value}}"
+    state: present
+  with_items:
+    - name: "PermitRootLogin"
+      value: "no"
+    - name: "PasswordAuthentication"
+      value: "no"
+    - name: "X11Forwarding"
+      value: "no"
+    - name: "RSAAuthentication"
+      value: "yes"
+    - name: "PubkeyAuthentication"
+      value: "yes"
+- name: set up host prompts
+  template:
+    src: "prompt.j2"
+    dest: "/etc/profile.d/prompt"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx

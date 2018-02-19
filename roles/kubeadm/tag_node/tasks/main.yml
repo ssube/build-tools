@@ -1,0 +1,8 @@
+---
+
+- name: apply node tags
+  shell: kubectl --kubeconfig "{{ context_path }}" get nodes
+
+- name: apply node tags
+  shell: kubectl --kubeconfig "{{ context_path }}" label nodes iron-1 --overwrite {{item}}
+  with_items: "{{node_tags}}"

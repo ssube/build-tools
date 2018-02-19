@@ -1,0 +1,38 @@
+---
+
+- name: set secrets path
+  check_mode: no
+  #
+  set_fact:
+    secrets_path: "{{playbook_dir}}/secrets/{{deploy_env}}/vars.yml"
+
+- name: debug secrets path
+  check_mode: no
+  debug:
+    var: secrets_path
+
+- name: load secret vars
+  check_mode: no
+  delegate_to: local
+  delegate_facts: false
+  #
+  include_vars:
+    file: "{{secrets_path}}"
+
+- name: stash secrets in s3
+  delegate_to: local
+  delegate_facts: true
+  run_once: true
+  # aws credentials
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key_id}}"
+    AWS_SESSION_TOKEN: "{{aws_session_token}}"
+    AWS_REGION: "{{secrets.region.primary}}"
+  # output files
+  aws_s3:
+    bucket: "{{bucket_name}}"
+    object: "secrets/vars.yml"
+    src: "{{secrets_path}}"
+    mode: put
+

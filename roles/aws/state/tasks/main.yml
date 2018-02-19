@@ -1,0 +1,48 @@
+---
+
+- name: sync state variables from s3
+  check_mode: no
+  # aws credentials
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key_id}}"
+    AWS_SESSION_TOKEN: "{{aws_session_token}}"
+    AWS_REGION: "{{secrets.region.primary}}"
+  # output files
+  aws_s3:
+    dest: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
+    mode: get
+    bucket: "{{bucket_name}}"
+    object: "{{item}}.yml"
+  with_items:
+    - output
+
+- name: fetch terraform state
+  check_mode: no
+  fetch:
+    src: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
+    dest: "{{output_dir.path}}/{{inventory_hostname}}"
+    fail_on_missing: yes
+    flat: yes
+  with_items:
+    - output
+
+- name: debug state variables
+  shell: ls -lha "{{output_dir.path}}"
+
+- name: load state variables
+  check_mode: no
+  # load everything from the env dir
+  include_vars:
+    file: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
+  with_items:
+    - output
+
+- name: delete state variables
+  check_mode: no
+  # TODO
+  file:
+    path: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
+    state: absent
+  with_items:
+    - output

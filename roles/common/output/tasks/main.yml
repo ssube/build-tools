@@ -1,0 +1,14 @@
+---
+
+- name: create output directory
+  check_mode: no
+  # TODO
+  file:
+    state: directory
+    path: "/tmp/{{deploy_project}}"
+  register: output_dir
+
+- name: debug output directory
+  check_mode: no
+  debug:
+    var: output_dir

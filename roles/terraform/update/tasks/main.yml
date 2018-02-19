@@ -1,0 +1,36 @@
+---
+
+- name: template tfvars
+  template:
+    src: "{{item}}.tfvars"
+    dest: "{{output_dir.path}}/tf-{{item}}.tfvars"
+  with_items:
+    - env
+    - state
+      
+- name: init terraform
+  shell: make terraform-create
+  register: output_terraform_init
+
+- name: init terraform output
+  debug:
+    var: output_terraform_init.stdout_lines
+
+- name: plan terraform
+  tags:
+    - terraform-ready
+  shell: make terraform-ready
+  register: output_terraform_run
+
+- name: apply terraform
+  tags:
+    - terraform-create
+    - terraform-update
+  environment:
+    TF_APPROVE: -auto-approve
+  shell: make terraform-
+  register: output_terraform_run
+
+- name: terraform output
+  debug:
+    var: output_terraform_run.stdout_lines

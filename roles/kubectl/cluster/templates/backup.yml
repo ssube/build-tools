@@ -1,0 +1,33 @@
+---
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: gitlab-backup
+  labels:
+    app: gitlab
+spec:
+  concurrencyPolicy: Forbid
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: gitlab
+        spec:
+          containers:
+            - name: gitlab-backup
+              image: apextoaster/kube
+              args:
+                - /bin/bash
+                - -c
+                - |
+                  set -euxo pipefail;
+                  echo "Starting backup: $(date)";
+                  kubectl get pods -o wide;
+                  kubectl exec gitlab-0 -- gitlab-rake gitlab:backup:create SKIP=builds,artifacts,lfs,registry
+                  echo "Finished backup: $(date)";
+          restartPolicy: OnFailure
+          nodeSelector:
+            cluster: server

@@ -1,0 +1,26 @@
+---
+
+- name: set k8s context path
+  set_fact:
+    context_path: "{{output_dir.path}}/{{inventory_hostname}}-context.yml"
+
+- name: export k8s context
+  check_mode: no
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key_id}}"
+    AWS_SESSION_TOKEN: "{{aws_session_token}}"
+    AWS_REGION: "{{output.region_primary}}"
+    KUBECONFIG: "{{ context_path }}"
+  shell: make kops-context
+
+- name: load k8s context
+  check_mode: no
+  include_vars:
+    file: "{{ context_path }}"
+    name: context
+
+- name: debug k8s context
+  check_mode: no
+  debug:
+    var: context

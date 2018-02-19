@@ -1,0 +1,54 @@
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: papertrail-destination
+type: Opaque
+data:
+  papertrail-destination: {{secrets.papertrail.destination | b64encode}}
+
+---
+
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: cluster-log
+spec:
+  template:
+    metadata:
+      labels:
+        name: cluster-log
+    spec:
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      containers:
+        - resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          env:
+{% raw %}
+            - name: SYSLOG_TAG
+              value: '{{ index .Container.Config.Labels "io.kubernetes.pod.namespace" }}[{{ index .Container.Config.Labels "io.kubernetes.pod.name" }}]'
+            - name: SYSLOG_HOSTNAME
+              value: '{{ index .Container.Config.Labels "io.kubernetes.container.name" }}'
+{% endraw %}
+            - name: ROUTE_URIS
+              valueFrom:
+                secretKeyRef:
+                  name: papertrail-destination
+                  key: papertrail-destination
+          image: gliderlabs/logspout:master
+          name: cluster-log
+          volumeMounts:
+            - name: log
+              mountPath: /var/run/docker.sock
+      volumes:
+        - name: log
+          hostPath:
+              path: /var/run/docker.sock
