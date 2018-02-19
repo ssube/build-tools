@@ -12,7 +12,7 @@ secret_file="${1}"
 secret_key="${2}"
 secret_default="${3:-}"
 
-if [[ -z "$(which yq0)" ]];
+if [[ -z "$(which yq)" ]];
 then
   echo_error "yq is missing" "${secret_default}"
 fi
