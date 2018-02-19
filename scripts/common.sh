@@ -9,6 +9,24 @@ fi
 # common functions
 ###
 
+# echo a confirmation
+# from https://stackoverflow.com/a/1885534/129032
+function echo_confirm() {
+  msg="${1}"
+
+  (>&2 echo "${msg}")
+
+  read -p "Continue? " -r
+  echo
+
+  if [[ "${REPLY:-n}" =~ ^[Yy] ]];
+  then
+    : # continue
+  else
+    echo_error "canceled by user."
+  fi
+}
+
 # echo an error
 # this function never returns
 # from https://stackoverflow.com/a/23550347/129032
