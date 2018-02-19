@@ -1,7 +1,7 @@
 resource "aws_security_group" "cluster_managed" {
   name        = "cluster-managed"
   description = "allow traffic from managed services"
-  vpc_id      = "${aws_vpc.cluster_vpc.id}"
+  vpc_id      = "${data.aws_vpc.cluster_vpc.id}"
 
   lifecycle {
     create_before_destroy = true

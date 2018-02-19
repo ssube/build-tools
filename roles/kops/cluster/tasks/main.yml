@@ -1,6 +1,13 @@
 ---
-  
+ 
+- name: cluster path
+  check_mode: no
+  file:
+    state: directory
+    path: "{{ output_dir.path }}/tf-cluster"
+
 - name: template cluster
+  check_mode: no
   tags:
     - cluster-create
     - cluster-update
@@ -9,29 +16,28 @@
     dest: "{{output_dir.path}}/k8s-cluster.yml"
 
 - name: create cluster
-  tags:
-    - cluster-create
-  environment:
+  environment: &kops-env
     KOPS_DEFINITION: "{{output_dir.path}}/k8s-cluster.yml"
-  shell: make kops-create
-  register: output_create_cluster
-
-- name: create cluster output
+    KOPS_MODULE: "{{output_dir.path}}/tf-cluster"
   tags:
     - cluster-create
-  debug:
-    var: output_create_cluster
+  shell: make kops-create
+  register: cluster_output
 
 - name: replace cluster
   tags:
     - cluster-update
-  environment:
-    KOPS_DEFINITION: "{{output_dir.path}}/k8s-cluster.yml"
+  environment: *kops-env
   shell: make kops-update
-  register: output_replace_cluster
+  register: cluster_output
 
-- name: replace cluster output
+- name: cluster output
   tags:
     - cluster-update
   debug:
-    var: output_replace_cluster
+    var: cluster_output
+
+- name: render terraform
+  check_mode: no
+  environment: *kops-env
+  shell: make kops-terraform

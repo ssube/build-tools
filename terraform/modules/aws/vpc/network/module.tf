@@ -5,7 +5,7 @@ variable "tag_owner" {}
 variable "tag_project" {}
 
 # VPC
-variable "vpc_cidr" {}
+variable "vpc_id" {}
 
 # Subnets
 variable "subnet_cidr" {
@@ -31,5 +31,5 @@ output "managed_subnets" {
 }
 
 output "vpc_id" {
-  value = "${aws_vpc.cluster_vpc.id}"
+  value = "${data.aws_vpc.cluster_vpc.id}"
 }

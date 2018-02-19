@@ -1,6 +1,6 @@
 
 module "domain_zone" {
-  source = "./modules/aws/route53/site"
+  source = "{{ terraform_module }}/aws/route53/site"
 
   site_domain = "${var.domain_name}"
   site_origin = "${module.website_site.site_domain}"
@@ -14,7 +14,7 @@ module "domain_zone" {
 }
 
 module "cluster_zone" {
-  source = "./modules/aws/route53/cluster"
+  source = "{{ terraform_module }}/aws/route53/cluster"
 
   cluster_name = "${module.tags.tag_project}"
 
@@ -28,7 +28,7 @@ module "cluster_zone" {
 }
 
 module "domain_mx" {
-  source = "./modules/aws/route53/record"
+  source = "{{ terraform_module }}/aws/route53/record"
 
   site_domain = "${var.domain_name}"
   site_zone   = "${module.domain_zone.zone_id}"
@@ -51,7 +51,7 @@ module "domain_mx" {
 }
 
 module "domain_status" {
-  source = "./modules/aws/route53/record"
+  source = "{{ terraform_module }}/aws/route53/record"
 
   site_domain = "${var.domain_name}"
   site_zone   = "${module.domain_zone.zone_id}"
@@ -68,7 +68,7 @@ module "domain_status" {
 }
 
 module "domain_git" {
-  source = "./modules/aws/route53/record"
+  source = "{{ terraform_module }}/aws/route53/record"
 
   site_domain = "${var.domain_name}"
   site_zone   = "${module.domain_zone.zone_id}"
@@ -85,7 +85,7 @@ module "domain_git" {
 }
 
 module "domain_metrics" {
-  source = "./modules/aws/route53/record"
+  source = "{{ terraform_module }}/aws/route53/record"
 
   site_domain = "${var.domain_name}"
   site_zone   = "${module.domain_zone.zone_id}"
@@ -102,7 +102,7 @@ module "domain_metrics" {
 }
 
 module "domain_keybase" {
-  source = "./modules/aws/route53/record"
+  source = "{{ terraform_module }}/aws/route53/record"
 
   site_domain = "${var.domain_name}"
   site_zone   = "${module.domain_zone.zone_id}"

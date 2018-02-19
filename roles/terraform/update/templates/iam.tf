@@ -1,6 +1,6 @@
 # Common Policies
 module "policy_admin" {
-  source = "./modules/aws/iam/policy"
+  source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_actions    = ["*"]
   policy_name       = "admin"
@@ -14,7 +14,7 @@ module "policy_admin" {
 }
 
 module "policy_backup" {
-  source = "./modules/aws/iam/policy"
+  source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_actions = [
     "s3:AbortMultipartUpload",
@@ -34,7 +34,7 @@ module "policy_backup" {
 }
 
 module "policy_deploy" {
-  source = "./modules/aws/iam/policy"
+  source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_actions = [
     "s3:AbortMultipartUpload",
@@ -58,7 +58,7 @@ module "policy_deploy" {
 }
 
 module "policy_monitor" {
-  source = "./modules/aws/iam/policy"
+  source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_actions = [
     "cloudwatch:*"
@@ -73,7 +73,7 @@ module "policy_monitor" {
 }
 
 module "policy_runner_cache" {
-  source = "./modules/aws/iam/policy"
+  source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_actions = [
     "s3:AbortMultipartUpload",
@@ -93,7 +93,7 @@ module "policy_runner_cache" {
 }
 
 module "policy_terraform" {
-  source = "./modules/aws/iam/policy"
+  source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_actions = [
     "acm:*",
@@ -121,7 +121,7 @@ module "policy_terraform" {
 
 # Service accounts
 module "bot_backup" {
-  source = "./modules/aws/iam/bot"
+  source = "{{ terraform_module }}/aws/iam/bot"
 
   user_name   = "backup"
   user_policy = [
@@ -135,7 +135,7 @@ module "bot_backup" {
 }
 
 module "bot_deploy" {
-  source = "./modules/aws/iam/bot"
+  source = "{{ terraform_module }}/aws/iam/bot"
 
   user_name   = "deploy"
   user_policy = [
@@ -149,7 +149,7 @@ module "bot_deploy" {
 }
 
 module "bot_monitor" {
-  source = "./modules/aws/iam/bot"
+  source = "{{ terraform_module }}/aws/iam/bot"
 
   user_name   = "monitor"
   user_policy = [
@@ -163,7 +163,7 @@ module "bot_monitor" {
 }
 
 module "bot_runner" {
-  source = "./modules/aws/iam/bot"
+  source = "{{ terraform_module }}/aws/iam/bot"
 
   user_name   = "runner"
   user_policy = [
@@ -178,7 +178,7 @@ module "bot_runner" {
 
 # User accounts
 module "user_owner" {
-  source = "./modules/aws/iam/user"
+  source = "{{ terraform_module }}/aws/iam/user"
 
   user_name   = "${module.tags.tag_owner}"
   user_policy = [

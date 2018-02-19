@@ -2,7 +2,7 @@
 
 ## Locals
 TF_APPROVE		?= -approve
-TF_PATH				:= $(ROOT_PATH)/terraform
+TF_PATH				?= $(ROLE_PATH)/terraform
 TF_STATE 			?= $(ROOT_PATH)/secrets/$(DEPLOY_ENV)/state.tfvars
 TF_VARS				?= $(ROOT_PATH)/secrets/$(DEPLOY_ENV)/env.tfvars
 

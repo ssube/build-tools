@@ -1,6 +1,6 @@
 # Tags
 module "tags" {
-  source = "./modules/meta/tags"
+  source = "{{ terraform_module }}/meta/tags"
 
   environment = "${var.tag_environment}"
   owner       = "${var.tag_owner}"
@@ -8,10 +8,12 @@ module "tags" {
 }
 
 module "cluster_network" {
-  source = "./modules/aws/vpc/network"
+  source = "{{ terraform_module }}/aws/vpc/network"
 
   subnet_cidr   = [
-    "10.20.10.0/24", "10.20.11.0/24", "10.20.12.0/24"
+    "{{ secrets.network.prefix }}.10.0/24",
+    "{{ secrets.network.prefix }}.11.0/24",
+    "{{ secrets.network.prefix }}.12.0/24"
   ]
   subnet_zones  = [
     "${var.zones_primary}", "${var.zones_replica}"
@@ -23,7 +25,7 @@ module "cluster_network" {
     "${module.cluster_k8s.node_security_group_ids}"
   ]
 
-  vpc_cidr = "10.20.0.0/16"
+  vpc_id = "{{ cluster_vpc.vpc.id }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -32,7 +34,7 @@ module "cluster_network" {
 }
 
 module "website_bucket" {
-  source = "./modules/aws/s3/site_bucket"
+  source = "{{ terraform_module }}/aws/s3/site_bucket"
 
   bucket_name     = "${var.domain_name}"
   bucket_origin   = "${module.website_site.site_principal}"
@@ -47,7 +49,7 @@ module "website_bucket" {
 }
 
 module "website_site" {
-  source = "./modules/aws/cloudfront/site"
+  source = "{{ terraform_module }}/aws/cloudfront/site"
 
   cert_arn      = "${var.site_cert}"
   site_aliases  = ["www.${var.domain_name}"]
@@ -61,7 +63,7 @@ module "website_site" {
 }
 
 module "cluster_state" {
-  source = "./modules/aws/s3/durable_bucket"
+  source = "{{ terraform_module }}/aws/s3/durable_bucket"
 
   bucket_name     = "${module.tags.tag_project}"
   bucket_writers  = [
@@ -78,12 +80,12 @@ module "cluster_state" {
 }
 
 module "cluster_backup" {
-  source = "./modules/aws/s3/durable_bucket"
+  source = "{{ terraform_module }}/aws/s3/durable_bucket"
 
   bucket_name     = "${module.tags.tag_project}-backup"
   bucket_writers  = [
     "arn:aws:iam::${module.tags.tag_account}:root",
-    "arn:aws:iam::719734659904:root"
+    "arn:aws:iam::719734659904:root"  # papertrail log writer
   ]
 
   region_primary  = "${var.region_primary}"
@@ -96,7 +98,7 @@ module "cluster_backup" {
 }
 
 module "runner_cache" {
-  source = "./modules/aws/s3/temporary_bucket"
+  source = "{{ terraform_module }}/aws/s3/temporary_bucket"
 
   bucket_name     = "${module.tags.tag_project}-runner-cache"
   bucket_writers  = [
@@ -112,12 +114,12 @@ module "runner_cache" {
   tag_project     = "${module.tags.tag_project}"
 }
 
-module "cluster_kube" {
-  source = "./modules/k8s/aws"
+module "cluster_k8s" {
+  source = "{{ output_dir.path }}/tf-cluster"
 }
 
 module "cluster_cache" {
-  source = "./modules/aws/cache/cluster"
+  source = "{{ terraform_module }}/aws/cache/cluster"
 
   cache_name      = "${var.database_name}"
   cache_secgroups = ["${module.cluster_network.managed_group}"]
@@ -130,11 +132,11 @@ module "cluster_cache" {
 }
 
 module "cluster_database_password" {
-  source = "./modules/meta/secure_token"
+  source = "{{ terraform_module }}/meta/secure_token"
 }
 
 module "cluster_database" {
-  source = "./modules/aws/rds"
+  source = "{{ terraform_module }}/aws/rds"
 
   db_name         = "${var.database_name}"
   db_username     = "${var.database_user}"
@@ -149,7 +151,7 @@ module "cluster_database" {
 }
 
 module "cluster_output" {
-  source = "./modules/aws/s3/template_object"
+  source = "{{ terraform_module }}/aws/s3/template_object"
 
   bucket_name = "${module.tags.tag_project}"
 

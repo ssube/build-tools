@@ -1,14 +1,41 @@
 ---
 
-- name: template tfvars
-  template:
-    src: "{{item}}.tfvars"
-    dest: "{{output_dir.path}}/tf-{{item}}.tfvars"
+- name: terraform root
+  check_mode: no
+  file:
+    state: directory
+    path: "{{ output_dir.path }}/{{ item }}"
   with_items:
-    - env
-    - state
+    - tf-cluster
+    - tf-root
+
+- name: terraform modules
+  set_fact:
+    terraform_module: "{{ role_path }}/../../../terraform/modules"
+    terraform_root: "{{ output_dir.path }}/tf-root"
+
+- name: template tfvars
+  check_mode: no
+  template:
+    src: "{{item}}"
+    dest: "{{ terraform_root }}/{{item}}"
+  with_items:
+    # vars
+    - env.tfvars
+    - state.tfvars
+    # resources
+    - dns.tf
+    - iam.tf
+    - main.tf
+    - module.tf
+    - provider.tf
       
 - name: init terraform
+  check_mode: no
+  environment: &tf-env
+    TF_PATH: "{{ terraform_root }}"
+    TF_STATE: "{{ terraform_root }}/state.tfvars"
+    TF_VARS: "{{ terraform_root }}/env.tfvars"
   shell: make terraform-create
   register: output_terraform_init
 
@@ -17,17 +44,20 @@
     var: output_terraform_init.stdout_lines
 
 - name: plan terraform
+  check_mode: no
+  environment: *tf-env
   tags:
     - cloud-ready
   shell: make terraform-ready
   register: output_terraform_run
 
 - name: apply terraform
+  environment:
+    <<: *tf-env
+    TF_APPROVE: -auto-approve
   tags:
     - cloud-create
     - cloud-update
-  environment:
-    TF_APPROVE: -auto-approve
   shell: make terraform-update
   register: output_terraform_run
 

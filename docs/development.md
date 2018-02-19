@@ -10,8 +10,9 @@ targets.
 
 ## Ansible
 
-This entire repository is an ansible playbook, with roles. This structure is needed to make the right files available
-on remote hosts (**TODO:** verify that).
+The repository has some Ansible with roles. It needs to be installed in a playbook before being used. To avoid
+constantly updating during development, you can symlink `roles/build-tools` in the playbook directory to the root of
+this repo.
 
 Roles are organized by tool, with some overlap between the kubectl roles and other cluster roles.
 
