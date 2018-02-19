@@ -8,4 +8,4 @@ high-availability, with a quorom of masters and a hot-spare server.
 The cluster will run with a single master, but rolling updates will break and you will need to recreate the cluster.
 
 To change the cluster size or node type, edit the `cluster.master` and `cluster.nodes` variables in
-[`cluster.yml`](../../vars/gitlab.yml).
+[`cluster.yml`](../../vars/cluster.yml).

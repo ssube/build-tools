@@ -18,17 +18,17 @@
 
 - name: plan terraform
   tags:
-    - terraform-ready
+    - cloud-ready
   shell: make terraform-ready
   register: output_terraform_run
 
 - name: apply terraform
   tags:
-    - terraform-create
-    - terraform-update
+    - cloud-create
+    - cloud-update
   environment:
     TF_APPROVE: -auto-approve
-  shell: make terraform-
+  shell: make terraform-update
   register: output_terraform_run
 
 - name: terraform output

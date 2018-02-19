@@ -7,9 +7,6 @@ TF_STATE 			?= $(ROOT_PATH)/secrets/$(DEPLOY_ENV)/state.tfvars
 TF_VARS				?= $(ROOT_PATH)/secrets/$(DEPLOY_ENV)/env.tfvars
 
 ## CRUD
-terraform-apply: ## apply terraform resource changes (including the cluster module)
-	$(PREFIX_CMD) terraform apply $(TF_APPROVE) -var-file=$(TF_VARS) $(TF_PATH)
-
 terraform-create: ## initialize the terraform backend
 	$(PREFIX_CMD) terraform init -backend -backend-config=$(TF_STATE) -get $(TF_PATH)
 
@@ -18,3 +15,6 @@ terraform-delete: ## delete the terraform infrastructure
 
 terraform-ready: ## plan terraform resource changes
 	$(PREFIX_CMD) terraform plan -var-file=$(TF_VARS) $(TF_PATH)
+
+terraform-update: ## apply terraform resource changes (including the cluster module)
+	$(PREFIX_CMD) terraform apply $(TF_APPROVE) -var-file=$(TF_VARS) $(TF_PATH)
