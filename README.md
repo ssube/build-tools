@@ -40,8 +40,10 @@ With the following SaaS tools in support:
 
 - [Foxpass](https://www.foxpass.com/)
 - [Grafana](https://grafana.com/)
+- [Keybase](https://keybase.io/)
 - [Papertrail](https://papertrailapp.com/)
 - [Sentry](https://sentry.io/)
+- [Uptime Robot](https://uptimerobot.com/)
 
 ## How
 

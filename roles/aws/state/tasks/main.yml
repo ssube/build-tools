@@ -2,6 +2,9 @@
 
 - name: sync state variables from s3
   check_mode: no
+  tags: &svc-tags
+    - service-create
+    - service-update
   # aws credentials
   environment:
     AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"
@@ -19,6 +22,7 @@
 
 - name: fetch terraform state
   check_mode: no
+  tags: *svc-tags
   fetch:
     src: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
     dest: "{{output_dir.path}}/{{inventory_hostname}}"
@@ -27,11 +31,9 @@
   with_items:
     - output
 
-- name: debug state variables
-  shell: ls -lha "{{output_dir.path}}"
-
 - name: load state variables
   check_mode: no
+  tags: *svc-tags
   # load everything from the env dir
   include_vars:
     file: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
@@ -40,6 +42,7 @@
 
 - name: delete state variables
   check_mode: no
+  tags: *svc-tags
   # TODO
   file:
     path: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
