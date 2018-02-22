@@ -9,9 +9,7 @@
 
 - name: template cluster
   check_mode: no
-  tags:
-    - cluster-create
-    - cluster-update
+  tags: always
   template:
     src: cluster.yml
     dest: "{{output_dir.path}}/k8s-cluster.yml"
@@ -21,7 +19,7 @@
     KOPS_DEFINITION: "{{output_dir.path}}/k8s-cluster.yml"
     KOPS_MODULE: "{{output_dir.path}}/tf-cluster"
   tags:
-    - never-do
+    - cluster-create
   shell: make kops-create
   register: cluster_output
 
@@ -41,5 +39,6 @@
 
 - name: render terraform
   check_mode: no
+  tags: always
   environment: *kops-env
   shell: make kops-terraform
