@@ -191,7 +191,7 @@ output:
 
   database:
     host: ${module.cluster_database.database_host}
-    name: gitlab-${module.tags.tag_environment}
+    name: gitlab
     user: {{ secrets.database.user }}
     pass: ${module.cluster_database_password.token_value}
 

@@ -9,7 +9,7 @@ cluster:
   timestamp: "2017-12-06T02:41:26Z"
   version: "1.8.6"
 
-  peer: false
+  peer: true
 
   dns: "{{secrets.dns}}"
 
