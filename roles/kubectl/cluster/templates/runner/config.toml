@@ -12,10 +12,10 @@ check_interval = 15
 
   [runners.cache]
     Type = "s3"
-    ServerAddress = "s3-{{output.region.primary}}.amazonaws.com"
-    AccessKey = "{{output.runner.cache.user.access_key}}"
-    SecretKey = "{{output.runner.cache.user.secret_key}}"
-    BucketName = "{{output.runner.cache.bucket.primary}}"
+    ServerAddress = "s3-{{ secrets.region.primary }}.amazonaws.com"
+    AccessKey = ""
+    SecretKey = ""
+    BucketName = "{{ output.runner.cache.bucket.primary }}"
     Shared = true
 
   [runners.kubernetes]

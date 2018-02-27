@@ -81,7 +81,7 @@ gitlab_rails['backup_pg_schema'] = 'public'
 gitlab_rails['backup_keep_time'] = 604800
 gitlab_rails['backup_upload_connection'] = {
   'provider'        => 'AWS',
-  'region'          => '{{output.region.primary}}',
+  'region'          => '{{ secrets.region.primary }}',
   'use_iam_profile' => true
 }
 gitlab_rails['backup_upload_remote_directory'] = '{{output.backup.bucket.primary}}'
