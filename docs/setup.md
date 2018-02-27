@@ -62,26 +62,13 @@ tasks that need access to AWS use an STS session created at the beginning of the
 
 #### DNS
 
-The Terraform stage will create a DNS zone for the cluster. You do not need to register a domain with AWS, but you do
-need a public zone.
+Before starting, you should set up a public zone in Route53 for the project. You do not need to register a domain with
+AWS, only a single zone is required.
 
-A delegation record will be created in the root zone, along with records for major services (like Gitlab). The root
-user needs the following policy for the root zone:
+#### Network
 
-```json
-{
-  "Sid": "update-project-dns",
-  "Effect": "Allow",
-  "Action": [
-    "route53:GetHostedZone",
-    "route53:ListResourceRecordSets",
-    "route53:ChangeResourceRecordSets"
-  ],
-  "Resource": [
-    "zone-id"
-  ]
-}
-```
+Before starting, you should set up a VPC. You do not need to create any subnets, but you should create an internet
+gateway if the cluster will have any public services.
 
 ### Other Hosts
 

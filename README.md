@@ -43,7 +43,7 @@ With the following SaaS tools in support:
 - [Keybase](https://keybase.io/)
 - [Papertrail](https://papertrailapp.com/)
 - [Sentry](https://sentry.io/)
-- [Uptime Robot](https://uptimerobot.com/)
+- [UptimeRobot](https://uptimerobot.com/)
 
 ## How
 
@@ -58,17 +58,20 @@ make is used as a task runner, orchestrating the ansible playbook runs using tag
 
 The following tools are used locally to set up the cluster:
 
-- [ansible](https://www.ansible.com/)
+- [ansible](https://www.ansible.com/) v2.4
 - [aws](https://aws.amazon.com/cli/)
 - bash 4+ (only a problem on OS X)
 - [blackbox](https://github.com/StackExchange/blackbox)
-- [kops](https://github.com/kubernetes/kops)
+- [kops](https://github.com/kubernetes/kops) v1.8.2 (git-0ab8b57c2 or later)
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
 - [make](https://www.gnu.org/software/make/)
-- [terraform](https://www.terraform.io/)
+- [terraform](https://www.terraform.io/) v0.11.2
 
 Some of these should be installed before running, some can be installed by the Ansible playbook. Please see
 [the setup guide § dependencies](docs/setup.md#dependencies) for details.
+
+The version requirements are noted when a very recent version is needed, usually for a specific fix. Otherwise,
+most recent versions should work.
 
 ## Where
 
