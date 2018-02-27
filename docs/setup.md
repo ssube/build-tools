@@ -10,7 +10,7 @@ This guide covers setup of the cluster.
 This playbook uses a few different tools and runs in stages:
 
 1. Cluster
-1. Cloud
+1. Server
 1. Service
 
 You can safely stop between stages and take a break, look at what the next stage will run, or even reboot your machine.
@@ -138,12 +138,12 @@ the cluster state and render Terraform source.
 This stage creates S3 objects to store the Kops state and Terraform source, but does not create any EC2 instances
 or make other large changes.
 
-## Cloud
+## Server
 
 This stage runs Terraform to create the cloud resources, DNS, roles, and other necessities:
 
 ```shell
-$ make cloud-create
+$ make server-create
 
 Resource actions are indicated with the following symbols:
   + create
@@ -170,12 +170,12 @@ $ make kops-validate
 **TODO:** output
 ```
 
-### Cloud Tools
+### Server Tools
 
-This stage runs the ansible playbook with `--tags cloud-create`. That renders the backend and providers for Terraform,
+This stage runs the ansible playbook with `--tags server-create`. That renders the backend and providers for Terraform,
 before `apply`ing the packaged TF and the kops cluster module.
 
-### Cloud Resources
+### Server Resources
 
 This step creates EC2 instances, DNS records, IAM roles, and myriad other resources. These are tracked by Terraform
 and tagged (where possible) to help track costs.

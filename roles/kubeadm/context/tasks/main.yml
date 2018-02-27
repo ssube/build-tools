@@ -1,11 +1,17 @@
 ---
 
 - name: set k8s context path
+  check_mode: no
+  tags: &svc-tags
+    - service-create
+    - service-ready
+    - service-update
   set_fact:
     context_path: "{{output_dir.path}}/{{inventory_hostname}}-context.yml"
 
 - name: fetch k8s context
   check_mode: no
+  tags: *svc-tags
   fetch:
     src: /etc/kubernetes/admin.conf
     dest: "{{ context_path }}"
@@ -14,6 +20,7 @@
 
 - name: copy k8s context
   check_mode: no
+  tags: *svc-tags
   copy:
     src: /etc/kubernetes/admin.conf
     dest: "{{ context_path }}"
@@ -21,11 +28,13 @@
 
 - name: load k8s context
   check_mode: no
+  tags: *svc-tags
   include_vars:
     file: "{{ context_path }}"
     name: context
 
 - name: debug k8s context
   check_mode: no
+  tags: *svc-tags
   debug:
     var: context

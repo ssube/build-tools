@@ -169,8 +169,8 @@ are specific to your environment. For example:
 
 - name: create cloud network
   tags:
-    - cloud-create
-    - cloud-update
+    - server-create
+    - server-update
     - cluster-create
     - cluster-update
     - service-create

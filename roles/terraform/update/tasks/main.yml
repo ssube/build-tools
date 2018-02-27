@@ -17,51 +17,20 @@
     terraform_module: "{{ role_path }}/../../../terraform/modules"
     terraform_root: "{{ output_dir.path }}/tf-root"
 
-- name: template tfvars
-  check_mode: no
+- name: template tf vars
   tags:
-    - cloud-create
-    - cloud-ready
-    - cloud-update
+    - server-create
+    - server-ready
+    - server-update
   template:
     src: "{{item}}"
     dest: "{{ terraform_root }}/{{item}}"
   with_items:
-    # vars
-    - env.tfvars
-    - state.tfvars
-    # resources
-    - dns.tf
-    - iam.tf
+    - env.sh
     - main.tf
-    - module.tf
-    - provider.tf
-      
-- name: plan terraform
+
+- name: print tf env
   check_mode: no
-  environment: &tf-env
-    TF_PATH: "{{ terraform_root }}"
-    TF_STATE: "{{ terraform_root }}/state.tfvars"
-    TF_VARS: "{{ terraform_root }}/env.tfvars"
-  tags:
-    - cloud-ready
-  shell: make terraform-create terraform-ready
-  register: output_terraform_run
-
-- name: apply terraform
-  environment:
-    <<: *tf-env
-    TF_APPROVE: -auto-approve
-  tags:
-    - cloud-create
-    - cloud-update
-  shell: make terraform-create terraform-update
-  register: output_terraform_run
-
-- name: terraform output
-  tags:
-    - cloud-create
-    - cloud-ready
-    - cloud-update
+  tags: always
   debug:
-    var: output_terraform_run.stdout_lines
+    msg: TF_ENV="{{ terraform_root }}/env.sh"

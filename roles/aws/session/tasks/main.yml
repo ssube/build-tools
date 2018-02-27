@@ -1,38 +1,71 @@
 ---
 
-- name: load aws credentials
+- name: create aws session
   # run locally, do not share facts
   <<: &run_locally
     check_mode: no
     delegate_to: local
-    delegate_facts: true
-    run_once: true
+    delegate_facts: false
+    run_once: false
+  tags: always
   # create a new sts session
-  shell: aws sts get-session-token --profile {{deploy_project}}-{{deploy_env}}
+  shell: aws sts get-session-token
   register: aws_token_raw
 
-- name: parse aws credentials
-  # run locally, share facts with other hosts
+- name: parse aws session
+  <<: *run_locally
+  tags: always
+  # parse the sts session and save fields
+  set_fact:
+    aws_session_parse: "{{ aws_token_raw.stdout | from_json }}"
+
+- name: save aws keys
   <<: &run_dist
     check_mode: no
     delegate_to: local
     delegate_facts: false
-    run_once: true
+    run_once: false
+  tags: always
   # parse the sts session and save fields
   set_fact:
-    aws_access_key_id: "{{item.Credentials.AccessKeyId}}"
-    aws_secret_key_id: "{{item.Credentials.SecretAccessKey}}"
-    aws_session_token: "{{item.Credentials.SessionToken}}"
-  with_items:
-  - "{{aws_token_raw.stdout | from_json}}"
+    aws_access_key: "{{ aws_session_parse.Credentials.AccessKeyId }}"
+    aws_secret_key: "{{ aws_session_parse.Credentials.SecretAccessKey }}"
+    aws_session_token: "{{ aws_session_parse.Credentials.SessionToken }}"
+
+- name: assume aws role
+  <<: *run_locally
+  tags: always
+  # assume
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+    AWS_SESSION_TOKEN: "{{ aws_session_token }}"
+    AWS_REGION: "{{ secrets.region.primary }}"
+  shell: aws sts assume-role --role-arn arn:aws:iam::569101898394:role/root-caa --role-session-name "sts-ansible" --duration-seconds 900
+  register: aws_session_raw
+
+- name: parse aws role
+  <<: *run_locally
+  tags: always
+  # parse
+  set_fact:
+    aws_session_parse: "{{ aws_session_raw.stdout | from_json }}"
+
+- name: save aws role
+  <<: *run_dist
+  tags: always
+  # facts
+  set_fact:
+    aws_role_access_key: "{{ aws_session_parse.Credentials.AccessKeyId }}"
+    aws_role_secret_key: "{{ aws_session_parse.Credentials.SecretAccessKey }}"
+    aws_role_session_token: "{{ aws_session_parse.Credentials.SessionToken }}"
 
 - name: debug aws credentials
-  tags:
-    - debug
-  <<: *run_locally
+  <<: *run_dist
+  tags: always
+  # debug
   debug:
     msg: |
-      aws_access_key_id: {{aws_access_key_id}}
-      aws_secret_key_id: {{aws_secret_key_id}}
-      aws_session_token: {{aws_session_token}}
-      aws_token_raw: {{aws_token_raw}}
+      aws_role_access_key: "{{ aws_session_parse.Credentials.AccessKeyId }}"
+      aws_role_secret_key: "{{ aws_session_parse.Credentials.SecretAccessKey }}"
+      aws_role_session_token: "{{ aws_session_parse.Credentials.SessionToken }}"
