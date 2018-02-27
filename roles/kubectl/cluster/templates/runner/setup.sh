@@ -12,7 +12,12 @@ RUNNER_CONFIG="/etc/gitlab-runner/config.toml"
 echo "Registering new runner..."
 gitlab-runner register \
   --non-interactive --name runner \
-  --url https://git.{{secrets.tags.project}}.{{secrets.dns.base}} --registration-token {{secrets.runner.token}} \
+{% if 'url' in secrets.gitlab %}
+  --url 'https://{{ secrets.gitlab.url }}' \
+{% else %}
+  --url "https://git.{{ secrets.tags.project }}.{{ secrets.dns.base }}" \
+{% endif %}
+  --registration-token {{secrets.runner.token}} \
   --executor kubernetes --kubernetes-namespace gitlab-jobs \
   --tag-list "{{runner_tags}}"
 

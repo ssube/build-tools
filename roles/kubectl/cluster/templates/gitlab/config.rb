@@ -1,4 +1,8 @@
-external_url 'https://git.{{secrets.tags.project}}.{{secrets.dns.base}}'
+{% if 'url' in secrets.gitlab %}
+external_url 'https://{{ secrets.gitlab.url }}'
+{% else %}
+external_url 'https://git.{{ secrets.tags.project }}.{{ secrets.dns.base }}'
+{% endif %}
 
 gitlab_rails['extra_google_analytics_id'] = '{{secrets.google.analytics}}'
 gitlab_rails['gitlab_username_changing_enabled'] = false
@@ -23,14 +27,14 @@ gitlab_rails['incoming_email_enabled'] = false
 
 # artifacts
 gitlab_rails['artifacts_enabled'] = true
-gitlab_rails['artifacts_path'] = "{{secrets.gitlab.data}}/artifacts"
+gitlab_rails['artifacts_path'] = "{{ secrets.gitlab.data }}/artifacts"
 
 # lfs
 gitlab_rails['lfs_enabled'] = true
-gitlab_rails['lfs_storage_path'] = "{{secrets.gitlab.data}}/lfs-objects"
+gitlab_rails['lfs_storage_path'] = "{{ secrets.gitlab.data }}/lfs-objects"
 
 # pages
-gitlab_rails['pages_path'] = "{{secrets.gitlab.data}}/pages"
+gitlab_rails['pages_path'] = "{{ secrets.gitlab.data }}/pages"
 
 # ldap
 gitlab_rails['ldap_enabled'] = true

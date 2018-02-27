@@ -3,7 +3,11 @@ check_interval = 15
 
 [[runners]]
   name = "runner"
-  url = "https://git.{{secrets.tags.project}}.{{secrets.dns.base}}"
+{% if 'url' in secrets.gitlab %}
+  url = 'https://{{ secrets.gitlab.url }}'
+{% else %}
+  url = "https://git.{{ secrets.tags.project }}.{{ secrets.dns.base }}"
+{% endif %}
   token = "TOKEN"
   executor = "kubernetes"
 
