@@ -4,6 +4,7 @@
   check_mode: no
   tags: &svc-tags
     - service-create
+    - service-ready
     - service-update
   set_fact:
     context_path: "{{output_dir.path}}/{{inventory_hostname}}-context.yml"
@@ -11,11 +12,12 @@
 - name: export k8s context
   check_mode: no
   tags: *svc-tags
+  # aws credentials
   environment:
-    AWS_ACCESS_KEY_ID: "{{aws_access_key_id}}"
-    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key_id}}"
-    AWS_SESSION_TOKEN: "{{aws_session_token}}"
-    AWS_REGION: "{{output.region_primary}}"
+    AWS_ACCESS_KEY_ID: "{{ aws_role_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_role_secret_key }}"
+    AWS_SESSION_TOKEN: "{{ aws_role_session_token }}"
+    AWS_REGION: "{{secrets.region.primary}}"
     KUBECONFIG: "{{ context_path }}"
   shell: make kops-context
 

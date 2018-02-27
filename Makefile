@@ -38,25 +38,25 @@ include $(ROLE_PATH)/scripts/*.mk
 all: help
 
 # Stages
-## Cloud (stage 2)
-cloud-create:
-	$(PREFIX_CMD) ansible-playbook --tags cloud-create $(ANS_DEFAULTS) $(ANS_SITE)
+## Server (stage 2)
+server-create:
+	$(PREFIX_CMD) ansible-playbook --tags server-create $(ANS_DEFAULTS) $(ANS_SITE)
 
-cloud-delete:
-	$(PREFIX_CMD) ansible-playbook --tags cloud-delete $(ANS_DEFAULTS) $(ANS_SITE)
+server-delete:
+	$(PREFIX_CMD) ansible-playbook --tags server-delete $(ANS_DEFAULTS) $(ANS_SITE)
 
-cloud-ready:
-	$(PREFIX_CMD) ansible-playbook --tags cloud-ready $(ANS_DEFAULTS) $(ANS_SITE)
+server-ready:
+	$(PREFIX_CMD) ansible-playbook --tags server-ready $(ANS_DEFAULTS) $(ANS_SITE)
 
-cloud-update:
-	$(PREFIX_CMD) ansible-playbook --tags cloud-update $(ANS_DEFAULTS) $(ANS_SITE)
+server-update:
+	$(PREFIX_CMD) ansible-playbook --tags server-update $(ANS_DEFAULTS) $(ANS_SITE)
 
 ## Cluster (stage 1)
 cluster-create: ## TODO
 	$(PREFIX_CMD) ansible-playbook --tags cluster-create $(ANS_DEFAULTS) $(ANS_SITE)
 
 cluster-delete: ## delete a k8s cluster
-	$(PREFIX_CMD) ansible-playbook --tags cluster-delete $(ANS_DEFAULTS) 
+	$(PREFIX_CMD) ansible-playbook --tags cluster-delete $(ANS_DEFAULTS) $()
 
 cluster-ready: ## TODO
 	$(PREFIX_CMD) ansible-playbook --tags cluster-ready $(ANS_DEFAULTS) $(ANS_SITE)

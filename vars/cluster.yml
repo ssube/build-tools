@@ -2,7 +2,6 @@
 
 cluster:
   bucket: "{{secrets.tags.project}}-{{secrets.tags.environment}}-primary"
-  dns: "{{secrets.dns.base}}"
   env: "{{secrets.tags.environment}}"
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20171121.1
   name: "{{secrets.tags.project}}.{{secrets.dns.base}}"
@@ -10,7 +9,12 @@ cluster:
   timestamp: "2017-12-06T02:41:26Z"
   version: "1.8.6"
 
+  peer: true
+
+  dns: "{{secrets.dns}}"
+
   network:
+    id: "{{ secrets.network.id }}"
     access: "{{secrets.network.access}}"
     cidr: "{{secrets.network.prefix}}.0.0/16"
     nonmasquerade: 100.64.0.0/16

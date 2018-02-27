@@ -10,7 +10,7 @@ This guide covers setup of the cluster.
 This playbook uses a few different tools and runs in stages:
 
 1. Cluster
-1. Cloud
+1. Server
 1. Service
 
 You can safely stop between stages and take a break, look at what the next stage will run, or even reboot your machine.
@@ -138,44 +138,86 @@ the cluster state and render Terraform source.
 This stage creates S3 objects to store the Kops state and Terraform source, but does not create any EC2 instances
 or make other large changes.
 
-## Cloud
+## Server
 
-This stage runs Terraform to create the cloud resources, DNS, roles, and other necessities:
+This stage creates Terraform to create the cloud resources:
 
 ```shell
-$ make cloud-create
+$ make server-create
 
-Resource actions are indicated with the following symbols:
-  + create
-  - destroy
-
-Terraform will perform the following actions:
-...
-Plan: 5 to add, 0 to change, 4 to destroy.
-
-Do you want to perform these actions?
-  Terraform will perform the actions described above.
-  Only 'yes' will be accepted to approve.
-
-  Enter a value:
+TASK [build-tools/roles/terraform/update : print tf env] ******
+ok: [local] => {
+    "msg": "TF_ENV=\"/tmp/example-net/tf-root/env.sh\""
+}
 ```
 
-If this looks right, enter `yes` and wait for Terraform to make it storm.
+While Terraform's diff logic is usually good, the configuration is better generated than written and the tool is not
+easily scripted. Applying changes usually takes some time and seeing the plan before running is important, so this part
+breaks with tradition to run Terraform without Ansible.
+
+Include the `env.sh` from before to set the `TF_*` variables, pointing `make` at the generated files:
+
+```shell
+$ source /tmp/example-net/tf-root/env.sh
+
+$ make terraform-create
+
+terraform init -backend -get=true /tmp/apex-net/tf-root
+Initializing modules...
+...
+Initializing the backend...
+
+Initializing provider plugins...
+...
+Terraform has been successfully initialized!
+...
+
+$ make terraform-ready
+
+terraform plan /tmp/apex-net/tf-root
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+...
+------------------------------------------------------------------------
+
+No changes. Infrastructure is up-to-date.
+```
+
+If this looks right, `make terraform-update` and wait for Terraform to make it storm.
 
 Continue when the cluster validates (this may take a few minutes):
 
 ```shell
 $ make kops-validate
 
-**TODO:** output
+kops validate cluster --name example-net.example.com --state s3://example-net-prod-primary
+Validating cluster example-net.example.com
+
+INSTANCE GROUPS
+NAME                    ROLE    MACHINETYPE     MIN     MAX     SUBNETS
+runner-nodes            Node    c4.xlarge       0       3       us-east-1a
+server-nodes            Node    t2.medium       1       2       us-east-1a
+us-east-1a-masters      Master  t2.small        1       1       us-east-1a
+us-east-1b-masters      Master  t2.small        1       1       us-east-1b
+us-east-1c-masters      Master  t2.small        1       1       us-east-1c
+
+NODE STATUS
+NAME                                            ROLE    READY
+ip-xx-yy-zz-ww.us-east-1.compute.internal       node    True
+ip-xx-yy-zz-ww.us-east-1.compute.internal       master  True
+ip-xx-yy-zz-ww.us-east-1.compute.internal       master  True
+ip-xx-yy-zz-ww.us-east-1.compute.internal       master  True
+
+Your cluster example-net.example.com is ready
 ```
 
-### Cloud Tools
+### Server Tools
 
-This stage runs the ansible playbook with `--tags cloud-create`. That renders the backend and providers for Terraform,
+This stage runs the ansible playbook with `--tags server-create`. That renders the backend and providers for Terraform,
 before `apply`ing the packaged TF and the kops cluster module.
 
-### Cloud Resources
+### Server Resources
 
 This step creates EC2 instances, DNS records, IAM roles, and myriad other resources. These are tracked by Terraform
 and tagged (where possible) to help track costs.
@@ -187,13 +229,38 @@ This stage renders kubernetes resources from the templates and applies them to t
 ```shell
 $ make service-create
 
-**TODO:** output
+ansible-playbook --tags service-create  --diff -f 8 -i /home/ssube/code/apex-net//inventory/everything.yml --extra-vars 'bucket_name=apex-net-prod-primary deploy_env=prod deploy_project=apex-net' /home/ssube/code/apex-net//site.yml
+
+TASK [build-tools/roles/kubectl/cluster : apply services] *****************
+changed: [local] => (item={u'name': u'log'})
+changed: [local] => (item={u'name': u'dns'})
+changed: [iron-1] => (item={u'name': u'log'})
+changed: [local] => (item={u'name': u'gitlab'})
+changed: [local] => (item={u'name': u'backup'})
+changed: [iron-1] => (item={u'name': u'runner'})
+changed: [local] => (item={u'name': u'scaler'})
+changed: [local] => (item={u'name': u'runner'})
+
+PLAY RECAP ****************************************************************
+iron-1                     : ok=35   changed=9    unreachable=0    failed=0
+local                      : ok=38   changed=7    unreachable=0    failed=0
 ```
 
-Which services are applied to a cluster can be customized in the inventory's `group_vars`:
+The services that are applied to each cluster can be customized in the inventory's `group_vars`. To set up a cluster
+with only the log service and a gitlab runner:
 
 ```yaml
-TODO: example
+all:
+  hosts:
+  # ...
+  children:
+    some-cluster:
+      hosts:
+        a:
+      vars:
+        cluster_services:
+          - name: log
+          - name: runner
 ```
 
 ### Service Tools

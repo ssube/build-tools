@@ -36,12 +36,12 @@ spec:
             - --skip-nodes-with-local-storage=false
 {% for ig in cluster.nodes %}
 {% if 'auto' in ig %}
-            - --nodes={{ig.size.min}}:{{ig.size.max}}:{{ig.name}}-nodes.{{cluster.project}}.{{cluster.dns}}
+            - --nodes={{ig.size.min}}:{{ig.size.max}}:{{ig.name}}-nodes.{{cluster.project}}.{{cluster.dns.base}}
 {% endif %}
 {% endfor %}
           env:
             - name: AWS_REGION
-              value: {{output.region.primary}}
+              value: {{secrets.region.primary}}
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt

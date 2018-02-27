@@ -1,10 +1,44 @@
+# Backend
+terraform {
+  backend "s3" {
+    bucket  = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}-state"
+    key     = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+    region  = "{{ secrets.region.primary }}"
+    profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+  }
+}
+
+# Providers
+provider "aws" {
+  profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+  region  = "{{ secrets.region.primary }}"
+}
+
+provider "aws" {
+  alias   = "dns"
+  profile = "apex-root-caa"
+  region  = "{{ secrets.region.primary }}"
+}
+
+provider "aws" {
+  alias   = "replica"
+  profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+  region  = "{{ secrets.region.replica }}"
+}
+
+provider "aws" {
+  alias   = "site"
+  profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+  region  = "{{ secrets.region.global }}"
+}
+
 # Tags
 module "tags" {
   source = "{{ terraform_module }}/meta/tags"
 
-  environment = "${var.tag_environment}"
-  owner       = "${var.tag_owner}"
-  project     = "${var.tag_project}"
+  environment = "{{ secrets.tags.environment }}"
+  owner       = "{{ secrets.tags.owner }}"
+  project     = "{{ secrets.tags.project }}"
 }
 
 module "cluster_network" {
@@ -16,16 +50,20 @@ module "cluster_network" {
     "{{ secrets.network.prefix }}.12.0/24"
   ]
   subnet_zones  = [
-    "${var.zones_primary}", "${var.zones_replica}"
+    "{{ secrets.region.primary }}a",
+    "{{ secrets.region.primary }}b",
+    "{{ secrets.region.primary }}c"
   ]
 
   # remove these security groups while creating the k8s cluster
   peer_groups = [
+{% if cluster.peer %}
     "${module.cluster_k8s.master_security_group_ids}",
     "${module.cluster_k8s.node_security_group_ids}"
+{% endif %}
   ]
 
-  vpc_id = "{{ cluster_vpc.vpc.id }}"
+  vpc_id = "{{ cluster.network.id }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -36,11 +74,11 @@ module "cluster_network" {
 module "website_bucket" {
   source = "{{ terraform_module }}/aws/s3/site_bucket"
 
-  bucket_name     = "${var.domain_name}"
+  bucket_name     = "{{ cluster.dns.base }}"
   bucket_origin   = "${module.website_site.site_principal}"
 
-  region_primary  = "${var.region_global}"
-  region_replica  = "${var.region_replica}"
+  region_primary  = "{{ secrets.region.global }}"
+  region_replica  = "{{ secrets.region.replica }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -51,27 +89,10 @@ module "website_bucket" {
 module "website_site" {
   source = "{{ terraform_module }}/aws/cloudfront/site"
 
-  cert_arn      = "${var.site_cert}"
-  site_aliases  = ["www.${var.domain_name}"]
-  site_domain   = "${var.domain_name}"
+  cert_arn      = "{{ secrets.site.cert }}"
+  site_aliases  = ["www.{{ cluster.dns.base }}"]
+  site_domain   = "{{ cluster.dns.base }}"
   source_bucket = "${module.website_bucket.bucket_domain}"
-
-  tag_account     = "${module.tags.tag_account}"
-  tag_environment = "${module.tags.tag_environment}"
-  tag_owner       = "${module.tags.tag_owner}"
-  tag_project     = "${module.tags.tag_project}"
-}
-
-module "cluster_state" {
-  source = "{{ terraform_module }}/aws/s3/durable_bucket"
-
-  bucket_name     = "${module.tags.tag_project}"
-  bucket_writers  = [
-    "arn:aws:iam::${module.tags.tag_account}:root"
-  ]
-
-  region_primary  = "${var.region_primary}"
-  region_replica  = "${var.region_replica}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -88,8 +109,8 @@ module "cluster_backup" {
     "arn:aws:iam::719734659904:root"  # papertrail log writer
   ]
 
-  region_primary  = "${var.region_primary}"
-  region_replica  = "${var.region_replica}"
+  region_primary  = "{{ secrets.region.primary }}"
+  region_replica  = "{{ secrets.region.replica }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -105,8 +126,8 @@ module "runner_cache" {
     "arn:aws:iam::${module.tags.tag_account}:root"
   ]
 
-  region_primary  = "${var.region_primary}"
-  region_replica  = "${var.region_replica}"
+  region_primary  = "{{ secrets.region.primary }}"
+  region_replica  = "{{ secrets.region.replica }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -121,7 +142,7 @@ module "cluster_k8s" {
 module "cluster_cache" {
   source = "{{ terraform_module }}/aws/cache/cluster"
 
-  cache_name      = "${var.database_name}"
+  cache_name      = "gitlab"
   cache_secgroups = ["${module.cluster_network.managed_group}"]
   cache_subnets   = ["${module.cluster_network.managed_subnets}"]
 
@@ -138,8 +159,8 @@ module "cluster_database_password" {
 module "cluster_database" {
   source = "{{ terraform_module }}/aws/rds"
 
-  db_name         = "${var.database_name}"
-  db_username     = "${var.database_user}"
+  db_name         = "gitlab"
+  db_username     = "{{ secrets.database.user }}"
   db_password     = "${module.cluster_database_password.token_value}"
   db_secgroups    = ["${module.cluster_network.managed_group}"]
   db_subnets      = ["${module.cluster_network.managed_subnets}"]
@@ -162,10 +183,6 @@ output:
     bucket:
       primary: ${module.cluster_backup.bucket_name}
 
-    user:
-      access_key: ${module.bot_backup.access_key}
-      secret_key: ${module.bot_backup.secret_key}
-
   cache:
     hosts: ${jsonencode(module.cluster_cache.cache_hosts)}
 
@@ -174,25 +191,14 @@ output:
 
   database:
     host: ${module.cluster_database.database_host}
-    name: ${var.database_name}
-    user: ${var.database_user}
+    name: gitlab
+    user: {{ secrets.database.user }}
     pass: ${module.cluster_database_password.token_value}
-
-  network:
-    id: ${module.cluster_network.vpc_id}
-
-  region:
-    primary: ${var.region_primary}
-    replica: ${var.region_replica}
 
   runner:
     cache:
       bucket:
         primary: ${module.runner_cache.bucket_name}
-
-      user:
-        access_key: ${module.bot_runner.access_key}
-        secret_key: ${module.bot_runner.secret_key}
 EOF
 
   tag_account     = "${module.tags.tag_account}"

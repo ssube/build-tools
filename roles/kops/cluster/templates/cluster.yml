@@ -2,19 +2,19 @@ apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: {{cluster.timestamp}}
-  name: {{cluster.project}}.{{cluster.dns}}
+  name: {{cluster.project}}.{{cluster.dns.base}}
 spec:
   additionalPolicies:
-    master: '{{cluster.policy.master | tojson}}'
-    node: '{{cluster.policy.node | tojson}}'
+    master: '{{ cluster.policy.master | tojson }}'
+    node: '{{ cluster.policy.node | tojson }}'
   api:
     dns: {}
   authorization:
     alwaysAllow: {}
   channel: stable
   cloudProvider: aws
-  configBase: s3://{{cluster.bucket}}/{{cluster.project}}.{{cluster.dns}}
-  dnsZone: {{cluster_zone.result.zone_id}}
+  configBase: s3://{{cluster.bucket}}/{{cluster.project}}.{{cluster.dns.base}}
+  dnsZone: {{ cluster.dns.zone }}
   etcdClusters:
   - etcdMembers:
 {% for zone in cluster.master.zones %}
@@ -34,10 +34,10 @@ spec:
   kubernetesApiAccess:
   - {{cluster.network.access}}
   kubernetesVersion: {{cluster.version}}
-  masterInternalName: api.internal.{{cluster.project}}.{{cluster.dns}}
-  masterPublicName: api.{{cluster.project}}.{{cluster.dns}}
+  masterInternalName: api.internal.{{cluster.project}}.{{cluster.dns.base}}
+  masterPublicName: api.{{cluster.project}}.{{cluster.dns.base}}
   networkCIDR: {{cluster.network.cidr}}
-  networkID: {{cluster_vpc.vpc.id}}
+  networkID: {{cluster.network.id}}
   networking:
     weave:
       mtu: 8912
@@ -45,6 +45,11 @@ spec:
   sshAccess:
   - {{cluster.network.access}}
   subnets: {{cluster.network.subnets | tojson}}
+  target:
+    terraform:
+      providerExtraConfig:
+        alias: kops
+        profile: {{ cluster.project }}-{{ cluster.env }}
   topology:
     dns:
       type: Public
@@ -60,7 +65,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: {{cluster.timestamp}}
   labels:
-    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns}}
+    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns.base}}
   name: {{zone}}-masters
 spec:
   image: {{cluster.image}}
@@ -89,7 +94,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: {{cluster.timestamp}}
   labels:
-    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns}}
+    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns.base}}
   name: {{ig.name}}-nodes
 spec:
   image: {{cluster.image}}
