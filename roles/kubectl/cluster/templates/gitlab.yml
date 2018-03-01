@@ -52,12 +52,17 @@ spec:
         - sh
         - -c
         - |
-          export DATA_PATH="{{secrets.gitlab.data}}/ssh";
+          export DATA_PATH="{{secrets.gitlab.data}}";
           if [[ ! -d "${DATA_PATH}" ]];
           then
             mkdir -p "${DATA_PATH}";
           fi;
-          chown 988:0 "${DATA_PATH}";
+          chown 988:988 "${DATA_PATH}";
+          ls -lha "${DATA_PATH}";
+          ls -lha "${DATA_PATH}/ssh";
+          readlink -f "${DATA_PATH}/ssh";
+          stat -c '%U' $(readlink -f /data/gitlab/ssh);
+          rm -rfv "${DATA_PATH}/ssh";
         volumeMounts: *gitlab_volumes
       nodeSelector:
         cluster: server

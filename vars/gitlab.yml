@@ -2,7 +2,7 @@
 
 gitlab:
   # ce/ee and the semver
-  edition: ee
+  edition: ce
   version: 10.5.2
 
   assets:
@@ -44,7 +44,7 @@ gitlab:
       value: "{{secrets.gitlab.ssh_keys.rsa.pub}}"
 
   runner:
-    version: 10.5.0
+    version: 10.4.0
 
     config:
       script:
