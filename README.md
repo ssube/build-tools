@@ -60,7 +60,7 @@ The following tools are used locally to set up the cluster:
 
 - [ansible](https://www.ansible.com/) v2.4
 - [aws](https://aws.amazon.com/cli/)
-- bash 4+ (only a problem on OS X)
+- bash v4
 - [blackbox](https://github.com/StackExchange/blackbox)
 - [kops](https://github.com/kubernetes/kops) v1.8.2 (git-0ab8b57c2 or later)
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)

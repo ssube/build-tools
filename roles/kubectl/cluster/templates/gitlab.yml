@@ -52,7 +52,7 @@ spec:
         - sh
         - -c
         - |
-          export DATA_PATH="{{secrets.gitlab.data}}";
+          export DATA_PATH="{{secrets.gitlab.data}}/ssh";
           if [[ ! -d "${DATA_PATH}" ]];
           then
             mkdir -p "${DATA_PATH}";

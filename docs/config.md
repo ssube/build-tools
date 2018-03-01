@@ -119,24 +119,18 @@ are specific to your environment. For example:
 # setup (stage -1)
 
 - name: sts session
-  tags:
-    - always
   hosts:
     - all
   roles:
     - role: build-tools/roles/aws/session
 
 - name: load environment
-  tags:
-    - always
   hosts:
     - all
   roles:
     - role: build-tools/roles/common/env
 
 - name: create working directory
-  tags:
-    - always
   hosts:
     - all
   roles:
@@ -148,18 +142,12 @@ are specific to your environment. For example:
 # dependencies (stage 0)
 
 - name: local dependencies
-  tags:
-    - dependencies-create
-    - dependencies-update
   hosts:
     - all
   roles:
     - role: build-tools/roles/common/local
 
 - name: remote dependencies
-  tags:
-    - dependencies-create
-    - dependencies-update
   hosts:
     - remote
   roles:
@@ -167,47 +155,25 @@ are specific to your environment. For example:
 
 # cluster (stage 1)
 
-- name: create cloud network
-  tags:
-    - server-create
-    - server-update
-    - cluster-create
-    - cluster-update
-    - service-create
-    - service-update
-  hosts:
-    - local
-  roles:
-    - role: build-tools/roles/aws/network
-  vars_files: *cluster_vars
-
-- name: create cluster
-  tags:
-    - cluster-create
+- name: cluster
   hosts:
     - local
   roles:
     - role: build-tools/roles/kops/cluster
   vars_files: *cluster_vars
 
-- name: update cluster
-  tags:
-    - cluster-update
+# server (stage 2)
+
+- name: server
   hosts:
     - local
   roles:
-    - role: build-tools/roles/kops/cluster
+    - role: build-tools/roles/terraform/update
   vars_files: *cluster_vars
-
-# cloud (stage 2)
 
 # service (stage 3)
 
 - name: fetch state
-  tags:
-    - service-create
-    - service-ready
-    - service-update
   hosts:
     - all
   roles:
@@ -215,10 +181,6 @@ are specific to your environment. For example:
   vars_files: *cluster_vars
 
 - name: get cluster context
-  tags:
-    - service-create
-    - service-ready
-    - service-update
   hosts:
     - aws-cluster
   roles:
@@ -226,10 +188,6 @@ are specific to your environment. For example:
   vars_files: *cluster_vars
 
 - name: get cluster context
-  tags:
-    - service-create
-    - service-ready
-    - service-update
   hosts:
     - sys-cluster
   roles:
@@ -237,9 +195,6 @@ are specific to your environment. For example:
   vars_files: *cluster_vars
 
 - name: tag cluster nodes
-  tags:
-    - service-create
-    - service-update
   hosts:
     - sys-cluster
   roles:
@@ -247,10 +202,6 @@ are specific to your environment. For example:
   vars_files: *cluster_vars
 
 - name: apply cluster services
-  tags:
-    - service-create
-    - service-ready
-    - service-update
   hosts:
     - aws-cluster
     - sys-cluster
