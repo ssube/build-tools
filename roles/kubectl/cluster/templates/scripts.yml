@@ -1,0 +1,11 @@
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cluster-scripts
+data:
+{% for file in script_files.results %}
+  {{ file.item.path | regex_replace('.*/scripts/(.*)$', '\\1') }}: {{ file.ansible_facts.script_body | tojson }}
+{% endfor %}
+

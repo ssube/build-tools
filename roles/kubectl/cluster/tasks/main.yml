@@ -12,6 +12,27 @@
   tags: *service-tags
   shell: kubectl --kubeconfig "{{ context_path }}" apply -f {{output_dir.path}}/k8s-dashboard.yml
 
+- name: list scripts
+  tags: *service-tags
+  find:
+    paths:
+      - "{{ playbook_dir }}/scripts"
+      - "{{ role_path }}/../../../scripts"
+    patterns: '*.sh'
+    recurse: yes
+  register: script_paths
+
+- name: read scripts
+  tags: *service-tags
+  set_fact:
+    script_body: "{{ lookup('file', item.path) }}"
+  with_items: "{{ script_paths.files }}"
+  register: script_files
+
+- name: debug scripts
+  debug:
+    var: script_files
+
 - name: template services
   tags: *service-tags
   template:
