@@ -92,15 +92,12 @@ gitlab_rails['backup_upload_remote_directory'] = '{{output.backup.bucket.primary
 
 # data
 git_data_dirs({
-  "default": {
-    "path": "{{secrets.gitlab.data}}"
+  "default" => {
+    "path" => "{{secrets.gitlab.data}}"
   }
 })
 
 gitlab_rails['shared_path'] = '{{secrets.gitlab.data}}/shared'
-
-gitlab_rails['git_max_size'] = 20971520
-gitlab_rails['git_timeout'] = 10
 
 # database
 postgresql['enable'] = false
