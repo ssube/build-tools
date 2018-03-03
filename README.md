@@ -6,8 +6,14 @@ This repo has [Ansible roles](http://docs.ansible.com/ansible/latest/playbooks_r
 [Terraform modules](https://www.terraform.io/docs/modules/usage.html) to set up a Gitlab CI cluster and supporting
 services.
 
-Everything is wrapped with `make` targets to `create`, `ready` (validate), `update`, and eventually `delete` the
-resources. The cluster is set up in stages: `cluster`, `cloud`, and finally `service`s.
+The setup and maintenance tasks are broken down into stages (`cluster`, `server`, `service`) and
+verbs (`create`, `ready` to validate, `update`, and eventually `delete`).
+
+|         | Create | Ready | Update | Delete |
+| ------- | ------ | ----- | ------ | ------ |
+| Cluster |     ✓ |    🚫  |     ✓ |     ⚠ |
+|  Server |     ✓ |    🚫  |     ✓ |     ⚠ |
+| Service |     ✓ |    🚫  |     ✓ |     ⚠ |
 
 **Alpha:** this project works for me and I'd like to share, but may not work for you. Maybe not at all.
 Please open issues if you see anything, or just with questions or suggestions.
@@ -90,7 +96,9 @@ setup scales well from small, personal projects to company clusters.
 ### Documentation
 
 ¹: This project is not a replacement for reading the documentation. Kubernetes and Gitlab both offer excellent
-documentation. To get comfortable with the concepts used here, check out:
+documentation, please read it.
+
+Details of the services used here can be found at:
 
 - [Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/plans/userguide/what-is-aws-auto-scaling.html)
 - [Amazon EC2 Spot Instances](https://aws.amazon.com/ec2/spot/details/)
@@ -102,4 +110,4 @@ documentation. To get comfortable with the concepts used here, check out:
 
 ## Who
 
-This project is maintained by ssube.
+This project is maintained by [ssube](https://github.com/ssube/).
