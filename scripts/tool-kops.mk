@@ -37,6 +37,3 @@ kops-rolling-update: ## perform a rolling update of the cluster
 
 kops-validate: ## validate the cluster health
 	$(PREFIX_CMD) kops validate cluster $(KOPS_DEFAULTS)
-
-kops-proxy: kops-context ## proxy to the cluster (may not work with a container prefix_cmd)
-	$(PREFIX_CMD) kubectl $(KUBE_DEFAULTS) proxy

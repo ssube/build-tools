@@ -15,5 +15,6 @@
 
 - name: apply network
   environment:
+    KUBECTL_CONTEXT: "{{ context_path }}"
     KUBECTL_RESOURCE_FILE: "{{ output_dir.path }}/k8s-network.yml"
   shell: make kubectl-apply
