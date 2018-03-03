@@ -121,8 +121,8 @@ todo: ## list remaining todo tasks in the code
 
 ## Git
 git-push: ## push to both gitlab and github
-	$(PREFIX_CMD) git push github
-	$(PREFIX_CMD) git push gitlab
+	$(PREFIX_CMD) git push github ${GIT_BRANCH}
+	$(PREFIX_CMD) git push gitlab ${GIT_BRANCH}
 
 ## Secrets
 secrets-unlock: ## unlock secrets before editing

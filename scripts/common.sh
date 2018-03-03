@@ -34,7 +34,7 @@ function echo_error() {
   error_msg="${1}"
   msg="${2}"
 
-  (>&2 echo "${error_msg}")
+  (>&2 echo "error: ${error_msg}")
 
   if [[ ! -z "${msg}" ]];
   then
