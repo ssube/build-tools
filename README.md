@@ -15,7 +15,7 @@ verbs (`create`, `ready` to validate, `update`, and eventually `delete`).
 |  Server |     ✓ |    🚫  |     ✓ |     ⚠ |
 | Service |     ✓ |    🚫  |     ✓ |     ⚠ |
 
-**Alpha:** this project works for me and I'd like to share, but may not work for you. Maybe not at all.
+**WIP:** this project works for me and I'd like to share, but may not work for you. Maybe not at all.
 Please open issues if you see anything, or just with questions or suggestions.
 
 To get started, the docs directory has guides for:
@@ -40,24 +40,32 @@ dependencies stage requires Ubuntu 16.04 or better. The latest Ubuntu LTS AMI is
 
 The following tools will be set up within the cluster:
 
-- [Gitlab](https://about.gitlab.com/) (with runners, both AWS spot and optional dedicated)
+- [Gitlab](https://about.gitlab.com/) (version control and CI)
+- [Gitlab runners](https://docs.gitlab.com/runner/) (AWS spot instances and optionally dedicated servers)
 
-With the following SaaS tools in support:
+Using the AWS services:
 
-- [Foxpass](https://www.foxpass.com/)
-- [Grafana](https://grafana.com/)
-- [Keybase](https://keybase.io/)
-- [Papertrail](https://papertrailapp.com/)
-- [Sentry](https://sentry.io/)
-- [UptimeRobot](https://uptimerobot.com/)
+- [EC2](https://aws.amazon.com/ec2/) (on-demand, reserved, and/or spot instances)
+- [ElastiCache](https://aws.amazon.com/elasticache/) (redis)
+- [RDS](https://aws.amazon.com/rds/) (postgresql)
+- [Route53](https://aws.amazon.com/route53/) (DNS)
+
+With support from the SaaS tools:
+
+- [Foxpass](https://www.foxpass.com/) (authentication/authorization)
+- [Grafana](https://grafana.com/) (graphing)
+- [Keybase](https://keybase.io/) (identity verification)
+- [Papertrail](https://papertrailapp.com/) (logging)
+- [Sentry](https://sentry.io/) (error logging)
+- [UptimeRobot](https://uptimerobot.com/) (availability monitoring)
 
 ## How
 
 make is used as a task runner, orchestrating the ansible playbook runs using tags. In short:
 
-1. terraform runs to set up DNS and VPC
-1. kubernetes cluster definition is rendered from the secrets into a terraform module.
-1. terraform runs to set up cache, database, and kubernetes nodes.
+1. you provide a config with DNS zone, VPC, and secrets
+1. a kubernetes cluster definition is rendered from the secrets into a terraform module.
+1. terraform runs to set up the cache, database, and kubernetes nodes.
 1. kubernetes service definitions are rendered from the secrets, config, and templates.
 
 ### Local Tools
@@ -66,7 +74,7 @@ The following tools are used locally to set up the cluster:
 
 - [ansible](https://www.ansible.com/) v2.4
 - [aws](https://aws.amazon.com/cli/)
-- bash v4
+- [bash](https://www.gnu.org/software/bash/) v4
 - [blackbox](https://github.com/StackExchange/blackbox)
 - [kops](https://github.com/kubernetes/kops) v1.8.2 (git-0ab8b57c2 or later)
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
