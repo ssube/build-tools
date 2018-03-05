@@ -13,18 +13,14 @@
   environment:
     KUBECTL_CONTEXT: "{{ context_path }}"
     KUBECTL_RESOURCE_FILE: "{{ output_dir.path }}/k8s-dashboard.yml"
-  shell: make kubectl-apply
+  shell: kubectl --kubeconfig "{{ context_path }}" apply -f {{output_dir.path}}/k8s-dashboard.yml
 
 - name: list scripts
   tags: *service-tags
   find:
-    paths:
-      - "{{ playbook_dir }}/scripts"
-      - "{{ role_path }}/../../../scripts"
-    patterns:
-      - '*.mk'
-      - '*.sh'
-    recurse: yes
+    paths: "{{ build_tools_scripts.paths }}"
+    patterns: 'Makefile,*.mk,*.sh'
+    recurse: no
   register: script_paths
 
 - name: read scripts
@@ -50,5 +46,5 @@
   environment:
     KUBECTL_CONTEXT: "{{ context_path }}"
     KUBECTL_RESOURCE_FILE: "{{ output_dir.path }}/k8s-{{ item.name }}.yml"
-  shell: make kubectl-apply
+  shell: kubectl --kubeconfig "{{ context_path }}" apply -f {{output_dir.path}}/k8s-{{item.name}}.yml
   with_items: "{{cluster_services}}"

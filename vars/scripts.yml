@@ -1,0 +1,9 @@
+build_tools_scripts:
+  paths:
+    - "scripts/"
+    - "roles/build-tools/"
+    - "roles/build-tools/scripts/"
+  scripts:
+    - "scripts"
+    - "roles/build-tools/Makefile"
+    - "roles/build-tools/scripts"

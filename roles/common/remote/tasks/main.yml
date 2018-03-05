@@ -1,14 +1,17 @@
 ---
+
 - name: update packages
   apt:
     autoremove: yes
     upgrade: dist
+
 - name: install packages
   apt:
     name: "{{item}}"
     state: latest
   with_items:
     - prometheus-node-exporter
+
 - name: secure sshd
   lineinfile:
     dest: "/etc/ssh/sshd_config"
@@ -26,6 +29,7 @@
       value: "yes"
     - name: "PubkeyAuthentication"
       value: "yes"
+
 - name: set up host prompts
   template:
     src: "prompt.j2"
@@ -33,3 +37,18 @@
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx
+
+- name: script dir
+  tags: always
+  file:
+    state: directory
+    path: "{{ item }}"
+  with_items:
+    - "{{ output_dir.path }}/scripts"
+
+- name: copy scripts
+  tags: always
+  copy:
+    src: "{{ playbook_dir }}/{{ item }}"
+    dest: "{{ output_dir.path }}/{{ item | basename }}"
+  with_items: "{{ build_tools_scripts.scripts }}"
