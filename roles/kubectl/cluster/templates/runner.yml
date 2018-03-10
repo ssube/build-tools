@@ -111,9 +111,6 @@ spec:
             - name: secrets
               mountPath: /secrets
               readOnly: true
-            - name: runner
-              mountPath: /runner
-              readOnly: true
       nodeSelector:
         cluster: server
       serviceAccountName: gitlab-runner
@@ -136,6 +133,3 @@ spec:
                 mode: {{body.mode}}
                 path: {{body.path | default(name)}}
 {% endfor %}
-        - name: runner
-          secret:
-            secretName: gitlab-runner-data

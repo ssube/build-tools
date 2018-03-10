@@ -61,8 +61,11 @@ gitlab:
       docker:
         mode: 0400
         path: ".docker/config.json"
-        value: "{{secrets.docker.config}}"
+        # the leading space prevents ansible from converting double quotes into single quotes
+        # see https://stackoverflow.com/a/32014283/129032 for details
+        value: " {{ secrets.docker.config }}"
       npm:
         mode: 0400
         path: ".npmrc"
-        value: "{{secrets.npm.config}}"
+        # same leading space as the docker secret
+        value: " {{ secrets.npm.config }}"
