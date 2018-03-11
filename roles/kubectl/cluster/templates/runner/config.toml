@@ -4,14 +4,18 @@ check_interval = 30
 [[runners]]
   name = "runner"
 {% if 'url' in secrets.gitlab %}
-  url = 'https://{{ secrets.gitlab.url }}'
+  url = "https://{{ secrets.gitlab.url }}"
 {% else %}
   url = "https://git.{{ secrets.tags.project }}.{{ secrets.dns.base }}"
 {% endif %}
   token = "TOKEN"
   executor = "kubernetes"
 
-  builds_dir = "/build/src/git.{{secrets.tags.project}}.{{secrets.dns.base}}"
+{% if 'url' in secrets.gitlab %}
+  builds_dir= "/build/src/{{ secrets.gitlab.url }}"
+{% else %}
+  builds_dir = "/build/src/git.{{ secrets.tags.project }}.{{ secrets.dns.base }}"
+{% endif %}
   cache_dir = "/cache"
 
   [runners.cache]
@@ -23,9 +27,8 @@ check_interval = 30
     Shared = true
 
   [runners.kubernetes]
-    host = ""
     image = "apextoaster/base"
-    namespace = "default"
+    namespace = "gitlab-jobs"
     namespace_overwrite_allowed = ""
     poll_interval = 30
     poll_timeout = 600
