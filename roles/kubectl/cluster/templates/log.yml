@@ -81,6 +81,7 @@ spec:
           volumeMounts:
             - name: log
               mountPath: /var/run/docker.sock
+      serviceAccountName: cluster-log
       volumes:
         - name: log
           hostPath:

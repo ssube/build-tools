@@ -1,12 +1,40 @@
 ---
 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-scaler
+  namespace: cluster-service
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-scaler
+  namespace: cluster-service
+  labels:
+    k8s-app: cluster-scaler
+    k8s-role: cluster-service
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: cluster-scaler
+  namespace: cluster-service
+
+---
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: cluster-scaler
-  namespace: kube-system
+  namespace: cluster-service
   labels:
-    app: cluster-scaler
+    k8s-app: cluster-scaler
+    k8s-role: cluster-service
 spec:
   replicas: 1
   selector:
@@ -49,6 +77,7 @@ spec:
           imagePullPolicy: "Always"
       nodeSelector:
         cluster: server
+      serviceAccountName: cluster-scaler
       volumes:
         - name: ssl-certs
           hostPath:
