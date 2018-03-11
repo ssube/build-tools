@@ -15,9 +15,12 @@ metadata:
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: gitlab-runner
+  name: gitlab-runner-jobs
+  namespace: gitlab-jobs
+  labels:
+    rbac.{{ cluster.name }}/gitlab-runner-role: "true"
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/exec"]
@@ -26,14 +29,41 @@ rules:
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: RoleBinding
+kind: ClusterRole
+metadata:
+  name: gitlab-runner-default
+  namespace: default
+  labels:
+    rbac.{{ cluster.name }}/gitlab-runner-role: "true"
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "watch", "list"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gitlab-runner
+aggregationRule:
+  clusterRoleSelectors:
+    - matchLabels:
+        rbac.{{ cluster.name }}/gitlab-runner-role: "true"
+rules: []
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
 metadata:
   name: gitlab-runner
 subjects:
   - kind: ServiceAccount
     name: gitlab-runner
+    namespace: default
 roleRef:
-  kind: Role
+  kind: ClusterRole
   name: gitlab-runner
   apiGroup: rbac.authorization.k8s.io
 
@@ -65,6 +95,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: gitlab-runner-secrets
+  namespace: gitlab-jobs
 type: Opaque
 data:
 {% for name, body in gitlab.runner.secrets.iteritems() %}
@@ -108,12 +139,6 @@ spec:
             - name: config
               mountPath: /config
               readOnly: true
-            - name: secrets
-              mountPath: /secrets
-              readOnly: true
-            - name: runner
-              mountPath: /runner
-              readOnly: true
       nodeSelector:
         cluster: server
       serviceAccountName: gitlab-runner
@@ -127,15 +152,3 @@ spec:
                 mode: {{body.mode}}
                 path: {{body.path | default(name)}}
 {% endfor %}
-        - name: secrets
-          secret:
-            secretName: gitlab-runner-secrets
-            items:
-{% for name, body in gitlab.runner.secrets.iteritems() %}
-              - key: {{name}}
-                mode: {{body.mode}}
-                path: {{body.path | default(name)}}
-{% endfor %}
-        - name: runner
-          secret:
-            secretName: gitlab-runner-data

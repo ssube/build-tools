@@ -16,7 +16,7 @@ provider "aws" {
 
 provider "aws" {
   alias   = "dns"
-  profile = "apex-root-caa"
+  profile = "{{ secrets.tags.project }}-dns"
   region  = "{{ secrets.region.primary }}"
 }
 
@@ -171,6 +171,58 @@ module "cluster_database" {
   tag_project     = "${module.tags.tag_project}"
 }
 
+module "policy_backup" {
+  source = "{{ terraform_module }}/aws/iam/policy"
+
+  policy_name = "backup"
+  policy_actions = [
+    "s3:*"
+  ]
+  policy_resources = [
+    "*"
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "policy_runner" {
+  source = "{{ terraform_module }}/aws/iam/policy"
+
+  policy_name = "runner"
+  policy_actions = [
+    "s3:*"
+  ]
+  policy_resources = [
+    "*"
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+{% for bot in secrets.users.bots %}
+module "bot_{{ bot.name }}" {
+  source = "{{ terraform_module }}/aws/iam/bot"
+
+  user_name   = "{{ bot.name }}"
+  user_policy = [
+{% for policy in bot.policy %}
+    "${module.policy_{{ policy }}.policy_arn}",
+{% endfor %}
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+{% endfor %}
+
 module "cluster_output" {
   source = "{{ terraform_module }}/aws/s3/template_object"
 
@@ -182,6 +234,18 @@ output:
   backup:
     bucket:
       primary: ${module.cluster_backup.bucket_name}
+
+  users:
+    bots:
+{% for bot in secrets.users.bots %}
+      {{ bot.name }}:
+        arn: ${module.bot_{{ bot.name }}.user_arn}
+        id: ${module.bot_{{ bot.name }}.user_id}
+{% if bot.creds %}
+        access_key: ${module.bot_{{ bot.name }}.access_key}
+        secret_key: ${module.bot_{{ bot.name }}.secret_key}
+{% endif %}
+{% endfor %}
 
   cache:
     hosts: ${jsonencode(module.cluster_cache.cache_hosts)}

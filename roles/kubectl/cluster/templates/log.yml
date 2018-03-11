@@ -3,10 +3,39 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: papertrail-destination
+  name: cluster-log-destination
+  namespace: cluster-service
+
 type: Opaque
 data:
   papertrail-destination: {{secrets.papertrail.destination | b64encode}}
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-log
+  namespace: cluster-service
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-log
+  namespace: cluster-service
+  labels:
+    k8s-app: cluster-log
+    k8s-role: cluster-service
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: cluster-log
+  namespace: cluster-service
 
 ---
 
@@ -14,6 +43,10 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: cluster-log
+  namespace: cluster-service
+  labels:
+    k8s-app: cluster-log
+    k8s-role: cluster-service
 spec:
   template:
     metadata:
@@ -41,13 +74,14 @@ spec:
             - name: ROUTE_URIS
               valueFrom:
                 secretKeyRef:
-                  name: papertrail-destination
+                  name: cluster-log-destination
                   key: papertrail-destination
           image: gliderlabs/logspout:master
           name: cluster-log
           volumeMounts:
             - name: log
               mountPath: /var/run/docker.sock
+      serviceAccountName: cluster-log
       volumes:
         - name: log
           hostPath:

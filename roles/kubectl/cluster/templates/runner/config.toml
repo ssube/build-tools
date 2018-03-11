@@ -1,33 +1,36 @@
 concurrent = 4
-check_interval = 15
+check_interval = 30
 
 [[runners]]
   name = "runner"
 {% if 'url' in secrets.gitlab %}
-  url = 'https://{{ secrets.gitlab.url }}'
+  url = "https://{{ secrets.gitlab.url }}"
 {% else %}
   url = "https://git.{{ secrets.tags.project }}.{{ secrets.dns.base }}"
 {% endif %}
   token = "TOKEN"
   executor = "kubernetes"
 
-  builds_dir = "/build/src/git.{{secrets.tags.project}}.{{secrets.dns.base}}"
+{% if 'url' in secrets.gitlab %}
+  builds_dir= "/build/src/{{ secrets.gitlab.url }}"
+{% else %}
+  builds_dir = "/build/src/git.{{ secrets.tags.project }}.{{ secrets.dns.base }}"
+{% endif %}
   cache_dir = "/cache"
 
   [runners.cache]
     Type = "s3"
     ServerAddress = "s3-{{ secrets.region.primary }}.amazonaws.com"
-    AccessKey = ""
-    SecretKey = ""
+    AccessKey = "{{ output.users.bots.runner.access_key }}"
+    SecretKey = "{{ output.users.bots.runner.secret_key }}"
     BucketName = "{{ output.runner.cache.bucket.primary }}"
     Shared = true
 
   [runners.kubernetes]
-    host = ""
     image = "apextoaster/base"
-    namespace = "default"
+    namespace = "gitlab-jobs"
     namespace_overwrite_allowed = ""
-    poll_interval = 15
+    poll_interval = 30
     poll_timeout = 600
     privileged = true
     service_account_overwrite_allowed = ""

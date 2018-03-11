@@ -8,7 +8,11 @@ galaxy_info:
   platforms:
     - name: Ubuntu
       versions:
-        - all
+        - xenial
+        - yakkety
+        - zesty
+        - artful
+        - bionic
   galaxy_tags:
     - kubernetes
     - gitlab
