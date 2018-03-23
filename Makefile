@@ -38,32 +38,6 @@ include $(ROLE_PATH)/scripts/*.mk
 all: help
 
 # Stages
-## Server (stage 2)
-server-create:
-	$(PREFIX_CMD) ansible-playbook --tags server-create $(ANS_ARGS) $(ANS_SITE)
-
-server-delete:
-	$(PREFIX_CMD) ansible-playbook --tags server-delete $(ANS_ARGS) $(ANS_SITE)
-
-server-ready:
-	$(PREFIX_CMD) ansible-playbook --tags server-ready $(ANS_ARGS) $(ANS_SITE)
-
-server-update:
-	$(PREFIX_CMD) ansible-playbook --tags server-update $(ANS_ARGS) $(ANS_SITE)
-
-## Cluster (stage 1)
-cluster-create: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags cluster-create $(ANS_ARGS) $(ANS_SITE)
-
-cluster-delete: ## delete a k8s cluster
-	$(PREFIX_CMD) ansible-playbook --tags cluster-delete $(ANS_ARGS) $()
-
-cluster-ready: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags cluster-ready $(ANS_ARGS) $(ANS_SITE)
-
-cluster-update: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags cluster-update $(ANS_ARGS) $(ANS_SITE)
-
 ## Dependencies (stage 0)
 dependencies-create: ## install local dependencies (still requires ansible and blackbox)
 	$(PREFIX_CMD) $(SCRIPT_PATH)/bootstrap.sh
@@ -85,26 +59,29 @@ dependencies-ready: ## check that dependencies are installed
 
 dependencies-update: dependencies-create ## install local dependencies (still requires ansible and blackbox)
 
+## Cluster (stage 1)
+cluster-create: ## TODO
+cluster-delete: ## delete a k8s cluster
+cluster-ready: ## TODO
+cluster-update: ## TODO
+cluster-create cluster-delete cluster-ready clsuter-update:
+	$(PREFIX_CMD) ansible-playbook --tags $@ $(ANS_ARGS) $(ANS_SITE)
+
+## Server (stage 2)
+server-create: ## create the terraform definitions
+server-delete: ## noop
+server-ready: ## ensure terraform state matches the remote state
+server-update: ## update the terraform definitions
+server-create server-delete server-ready server-update:
+	$(PREFIX_CMD) ansible-playbook --tags $@ $(ANS_ARGS) $(ANS_SITE)
+
 ## Service (stage 3)
 service-create: ## apply service configuration within the cluster
-	$(PREFIX_CMD) ansible-playbook --tags service-create $(ANS_ARGS) $(ANS_SITE)
-
 service-delete: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags service-delete $(ANS_ARGS) $(ANS_SITE)
-
 service-ready: ## render service configuration for the cluster without applying
-	$(PREFIX_CMD) ansible-playbook --tags service-ready $(ANS_ARGS) $(ANS_SITE)
-
 service-update: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags service-update $(ANS_ARGS) $(ANS_SITE)
-
-# Services
-## Gitlab
-gitlab-backup: ## create a gitlab backup
-	$(PREFIX_CMD) $(ROLE_PATH)/scripts/gitlab-create.sh
-
-gitlab-restore: ## restore a gitlab backup
-	$(PREFIX_CMD) $(ROLE_PATH)/scripts/gitlab-restore.sh $(BACKUP_NAME)
+service-create service-delete service-ready service-update:
+	$(PREFIX_CMD) ansible-playbook --tags $@ $(ANS_ARGS) $(ANS_SITE)
 
 # Meta
 ## Misc
@@ -118,11 +95,6 @@ todo: ## list remaining todo tasks in the code
 	@echo "Remaining tasks:"
 	@echo ""
 	@grep -i "todo" -I -r .
-
-## Git
-git-push: ## push to both gitlab and github
-	$(PREFIX_CMD) git push github ${GIT_BRANCH}
-	$(PREFIX_CMD) git push gitlab ${GIT_BRANCH}
 
 ## Secrets
 secrets-unlock: ## unlock secrets before editing
