@@ -6,9 +6,9 @@
 
 # Variables
 ## Arguments
-BACKUP_NAME 	?= none
-DEPLOY_ENV  	?= test
-PREFIX_CMD		?=
+BACKUP_NAME ?= none
+DEPLOY_ENV ?= test
+PREFIX_CMD ?=
 
 ## Paths
 # resolve the makefile's path and directory, from https://stackoverflow.com/a/18137056
@@ -40,34 +40,34 @@ all: help
 # Stages
 ## Server (stage 2)
 server-create:
-	$(PREFIX_CMD) ansible-playbook --tags server-create $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags server-create $(ANS_ARGS) $(ANS_SITE)
 
 server-delete:
-	$(PREFIX_CMD) ansible-playbook --tags server-delete $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags server-delete $(ANS_ARGS) $(ANS_SITE)
 
 server-ready:
-	$(PREFIX_CMD) ansible-playbook --tags server-ready $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags server-ready $(ANS_ARGS) $(ANS_SITE)
 
 server-update:
-	$(PREFIX_CMD) ansible-playbook --tags server-update $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags server-update $(ANS_ARGS) $(ANS_SITE)
 
 ## Cluster (stage 1)
 cluster-create: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags cluster-create $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags cluster-create $(ANS_ARGS) $(ANS_SITE)
 
 cluster-delete: ## delete a k8s cluster
-	$(PREFIX_CMD) ansible-playbook --tags cluster-delete $(ANS_DEFAULTS) $()
+	$(PREFIX_CMD) ansible-playbook --tags cluster-delete $(ANS_ARGS) $()
 
 cluster-ready: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags cluster-ready $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags cluster-ready $(ANS_ARGS) $(ANS_SITE)
 
 cluster-update: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags cluster-update $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags cluster-update $(ANS_ARGS) $(ANS_SITE)
 
 ## Dependencies (stage 0)
 dependencies-create: ## install local dependencies (still requires ansible and blackbox)
 	$(PREFIX_CMD) $(SCRIPT_PATH)/bootstrap.sh
-	$(PREFIX_CMD) ansible-playbook --tags dependencies-update $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags dependencies-update $(ANS_ARGS) $(ANS_SITE)
 
 dependencies-delete: ## delete local installed dependencies
 	@echo "this makes no sense"
@@ -87,16 +87,16 @@ dependencies-update: dependencies-create ## install local dependencies (still re
 
 ## Service (stage 3)
 service-create: ## apply service configuration within the cluster
-	$(PREFIX_CMD) ansible-playbook --tags service-create $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags service-create $(ANS_ARGS) $(ANS_SITE)
 
 service-delete: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags service-delete $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags service-delete $(ANS_ARGS) $(ANS_SITE)
 
 service-ready: ## render service configuration for the cluster without applying
-	$(PREFIX_CMD) ansible-playbook --tags service-ready $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags service-ready $(ANS_ARGS) $(ANS_SITE)
 
 service-update: ## TODO
-	$(PREFIX_CMD) ansible-playbook --tags service-update $(ANS_DEFAULTS) $(ANS_SITE)
+	$(PREFIX_CMD) ansible-playbook --tags service-update $(ANS_ARGS) $(ANS_SITE)
 
 # Services
 ## Gitlab
