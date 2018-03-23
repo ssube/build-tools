@@ -31,6 +31,13 @@ export PROJECT_VARS := $(ROOT_PATH)/secrets/$(DEPLOY_ENV)/vars.yml
 export PROJECT_NAME := $(shell $(SCRIPT_PATH)/read-secret.sh $(PROJECT_VARS) .secrets.tags.project 'example-net')
 export PROJECT_DOMAIN := $(shell $(SCRIPT_PATH)/read-secret.sh $(PROJECT_VARS) .secrets.dns.base 'example.com')
 
+## System
+# from https://stackoverflow.com/a/23569003/129032
+export SYSTEM_CORES ?= $(shell getconf _NPROCESSORS_ONLN)
+# from https://stackoverflow.com/a/2441064/129032
+export SYSTEM_MEM_KB ?= $(shell grep MemTotal /proc/meminfo | awk '{print $$2}' )
+export SYSTEM_MEM_GB ?= $(shell echo $$(( $(SYSTEM_MEM_KB) / 1024 / 1024 )) )
+
 # Includes
 include $(ROLE_PATH)/scripts/*.mk
 
