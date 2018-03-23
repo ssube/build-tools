@@ -1,5 +1,53 @@
 ---
 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backup-job
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: backup-job-exec
+  namespace: default
+  labels:
+    rbac.{{ cluster.name }}/backup-job-role: "true"
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/exec"]
+    verbs: ["get", "list", "create"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backup-job
+aggregationRule:
+  clusterRoleSelectors:
+    - matchLabels:
+        rbac.{{ cluster.name }}/backup-job-role: "true"
+rules: []
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: backup-job
+subjects:
+  - kind: ServiceAccount
+    name: backup-job
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: backup-job
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
@@ -16,9 +64,6 @@ spec:
           labels:
             app: gitlab
         spec:
-          nodeSelector:
-            cluster: server
-          restartPolicy: OnFailure
           containers:
             - name: gitlab-backup
               image: apextoaster/kube
@@ -31,3 +76,7 @@ spec:
                   kubectl get pods -o wide;
                   kubectl exec gitlab-0 -- gitlab-rake gitlab:backup:create SKIP=artifacts,builds,registry
                   echo "Finished backup: $(date)";
+          nodeSelector:
+            cluster: server
+          restartPolicy: OnFailure
+          serviceAccountName: backup-job

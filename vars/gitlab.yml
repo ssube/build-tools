@@ -3,7 +3,7 @@
 gitlab:
   # ce/ee and the semver
   edition: ee
-  version: 10.5.2
+  version: 10.5.5
 
   assets:
     sshd_config:
