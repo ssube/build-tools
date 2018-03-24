@@ -1,7 +1,6 @@
 # Terraform
 
 ## Locals
-TF_APPROVE		?= -auto-approve
 TF_PATH				?= $(ROLE_PATH)/terraform
 
 ## CRUD
@@ -15,7 +14,7 @@ terraform-ready: ## plan terraform resource changes
 	$(PREFIX_CMD) terraform plan $(TF_PATH)
 
 terraform-update: ## apply terraform resource changes (including the cluster module)
-	$(PREFIX_CMD) terraform apply $(TF_APPROVE) -input=false $(TF_PATH)
+	$(PREFIX_CMD) terraform apply $(if ifdef APPROVE, -auto-approve) -input=false $(TF_PATH)
 
 ## Others
 terraform-import: ## import TF_IMPORT_SRC as TF_IMPORT_DEST

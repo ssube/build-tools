@@ -16,12 +16,11 @@ kops-create: ## create a k8s cluster and public key from the cluster definition
 	$(PREFIX_CMD) kops create secret $(KOPS_CLUSTER) sshpublickey admin -i ~/.ssh/yubi.pub
 
 kops-delete: ## delete a k8s cluster
-	$(PREFIX_CMD) kops delete cluster $(KOPS_DEFAULTS) --yes
+	$(PREFIX_CMD) kops delete cluster $(KOPS_DEFAULTS) $(if ifdef APPROVE, --yes)
 
-kops-ready: ## TODO
-	$(PREFIX_CMD) kops 
+kops-ready: kops-validate ## ensure a k8s cluster is ready
 
-kops-update: kops-replace kops-terraform ## update the cluster module from the rendered definition (does not update remote resources)
+kops-update: kops-replace kops-update-tf ## update the cluster module from the rendered definition (does not update remote resources)
 
 ## Extras
 kops-context: ## export a k8s cluster context
@@ -31,13 +30,13 @@ kops-replace: ## replace the kops state with new resources generated from the ya
 	$(PREFIX_CMD) kops replace $(KOPS_DEFAULTS) -f $(KOPS_DEFINITION) -v 0
 
 kops-update-roll: ## perform a rolling update of the cluster
-	$(PREFIX_CMD) kops rolling-update cluster $(KOPS_DEFAULTS) --interactive --yes
+	$(PREFIX_CMD) kops rolling-update cluster $(KOPS_DEFAULTS) --interactive $(if ifdef APPROVE, --yes)
 
 kops-update-s3: ## update a cluster from stored tf state
-	$(PREFIX_CMD) kops update cluster $(KOPS_DEFAULTS) --yes
+	$(PREFIX_CMD) kops update cluster $(KOPS_DEFAULTS) $(if ifdef APPROVE, --yes)
 
 kops-update-tf: ## render a terraform module from the kops state
-	$(PREFIX_CMD) kops update cluster $(KOPS_DEFAULTS) --target=terraform --out $(KOPS_MODULE) --yes
+	$(PREFIX_CMD) kops update cluster $(KOPS_DEFAULTS) --target=terraform --out $(KOPS_MODULE) $(if ifdef APPROVE, --yes)
 
 kops-validate: ## validate the cluster health
 	$(PREFIX_CMD) kops validate cluster $(KOPS_DEFAULTS)
