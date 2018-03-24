@@ -17,4 +17,7 @@ test)
 prod)
   echo "com"
   ;;
+*)
+  echo "cloud"
+  ;;
 esac
