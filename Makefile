@@ -71,7 +71,7 @@ cluster-create: ## TODO
 cluster-delete: ## delete a k8s cluster
 cluster-ready: ## TODO
 cluster-update: ## TODO
-cluster-create cluster-delete cluster-ready clsuter-update:
+cluster-create cluster-delete cluster-ready cluster-update:
 	$(PREFIX_CMD) ansible-playbook --tags $@ $(ANS_ARGS) $(ANS_SITE)
 
 ## Server (stage 2)

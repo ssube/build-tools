@@ -7,12 +7,12 @@ This repo has [Ansible roles](http://docs.ansible.com/ansible/latest/playbooks_r
 [Gitlab CI](https://docs.gitlab.com/ee/ci/) and supporting services.
 
 The setup and maintenance tasks are broken down into stages (`cluster`, `server`, `service`) and
-verbs (`create`, `ready` to validate, `update`, and eventually `delete`).
+verbs (`create`, `ready`, `update`, and eventually `delete`).
 
 |         | Create |  Ready | Update |  Delete |
 | ------- | ------ | ------ | ------ | ------- |
-| Cluster |     ✅ |    🚫  |     ✅ |     ⚠ |
-|  Server |     ✅ |    🚫  |     ✅ |     ⚠ |
+| Cluster |     ✅ |    ⚠  |     ✅ |     ⚠ |
+|  Server |     ✅ |    ✅  |     ✅ |     ⚠ |
 | Service |     ✅ |    🚫  |     ✅ |     ⚠ |
 
 **WIP:** this project works for me and I'd like to share, but may not work for you. Maybe not at all.

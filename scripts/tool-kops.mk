@@ -8,6 +8,7 @@ KOPS_BUCKET		:= $(KOPS_STATE_STORE)
 KOPS_CLUSTER	:= --name $(PROJECT_NAME).$(PROJECT_DOMAIN)
 KOPS_DEFAULTS := $(KOPS_CLUSTER) --state $(KOPS_BUCKET)
 KOPS_MODULE   ?= $(ROOT_PATH)/terraform/modules/k8s/aws
+KOPS_ROLL     ?= --master-interval 15m --node-interval 15m
 
 ## CRUD
 kops-create: ## create a k8s cluster and public key from the cluster definition
@@ -29,11 +30,14 @@ kops-context: ## export a k8s cluster context
 kops-replace: ## replace the kops state with new resources generated from the yaml
 	$(PREFIX_CMD) kops replace $(KOPS_DEFAULTS) -f $(KOPS_DEFINITION) -v 0
 
-kops-terraform: ## render a terraform module from the kops state
-	$(PREFIX_CMD) kops update cluster $(KOPS_DEFAULTS) --target=terraform --out $(KOPS_MODULE) --yes
+kops-update-roll: ## perform a rolling update of the cluster
+	$(PREFIX_CMD) kops rolling-update cluster $(KOPS_DEFAULTS) --interactive --yes
 
-kops-rolling-update: ## perform a rolling update of the cluster
-	$(PREFIX_CMD) kops rolling-update cluster $(KOPS_DEFAULTS) --yes
+kops-update-s3: ## update a cluster from stored tf state
+	$(PREFIX_CMD) kops update cluster $(KOPS_DEFAULTS) --yes
+
+kops-update-tf: ## render a terraform module from the kops state
+	$(PREFIX_CMD) kops update cluster $(KOPS_DEFAULTS) --target=terraform --out $(KOPS_MODULE) --yes
 
 kops-validate: ## validate the cluster health
 	$(PREFIX_CMD) kops validate cluster $(KOPS_DEFAULTS)
