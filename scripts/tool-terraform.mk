@@ -20,3 +20,6 @@ terraform-update: ## apply terraform resource changes (including the cluster mod
 ## Others
 terraform-import: ## import TF_IMPORT_SRC as TF_IMPORT_DEST
 	$(PREFIX_CMD) terraform import -config=$(TF_PATH) module.$(TF_IMPORT_DEST) $(TF_IMPORT_SRC)
+
+terraform-refresh: ## refresh state for TF_REFRESH_RES
+	$(PREFIX_CMD) terraform refresh -target=module.$(TF_REFRESH_RES) $(TF_PATH)
