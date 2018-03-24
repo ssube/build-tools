@@ -20,7 +20,7 @@ metadata:
   name: gitlab-runner-jobs
   namespace: gitlab-jobs
   labels:
-    rbac.{{ cluster.name }}/gitlab-runner-role: "true"
+    rbac.{{ build_tools_cluster.name }}/gitlab-runner-role: "true"
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/exec"]
@@ -34,7 +34,7 @@ metadata:
   name: gitlab-runner-default
   namespace: default
   labels:
-    rbac.{{ cluster.name }}/gitlab-runner-role: "true"
+    rbac.{{ build_tools_cluster.name }}/gitlab-runner-role: "true"
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -49,7 +49,7 @@ metadata:
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
-        rbac.{{ cluster.name }}/gitlab-runner-role: "true"
+        rbac.{{ build_tools_cluster.name }}/gitlab-runner-role: "true"
 rules: []
 
 ---
@@ -75,7 +75,7 @@ metadata:
   name: gitlab-runner-config
 type: Opaque
 data:
-{% for name, body in gitlab.runner.config.iteritems() %}
+{% for name, body in build_tools_gitlab.runner.config.iteritems() %}
   {{name}}: {{body.value | b64encode}}
 {% endfor %}
 
@@ -98,7 +98,7 @@ metadata:
   namespace: gitlab-jobs
 type: Opaque
 data:
-{% for name, body in gitlab.runner.secrets.iteritems() %}
+{% for name, body in build_tools_gitlab.runner.secrets.iteritems() %}
   {{name}}: {{body.value | b64encode}}
 {% endfor %}
 
@@ -121,7 +121,7 @@ spec:
     spec:
       containers:
         - name: gitlab-runner
-          image: gitlab/gitlab-runner:v{{gitlab.runner.version}}
+          image: gitlab/gitlab-runner:v{{ build_tools_gitlab.runner.version }}
           imagePullPolicy: "Always"
           command:
             - bash
@@ -147,7 +147,7 @@ spec:
           secret:
             secretName: gitlab-runner-config
             items:
-{% for name, body in gitlab.runner.config.iteritems() %}
+{% for name, body in build_tools_gitlab.runner.config.iteritems() %}
               - key: {{name}}
                 mode: {{body.mode}}
                 path: {{body.path | default(name)}}

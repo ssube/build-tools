@@ -1,5 +1,4 @@
 #! /bin/bash
-set -Eeuxo pipefail
 
 source "$(dirname ${0})/common.sh"
 

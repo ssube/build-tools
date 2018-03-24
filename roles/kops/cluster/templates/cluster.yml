@@ -1,77 +1,77 @@
 apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
-  creationTimestamp: {{cluster.timestamp}}
-  name: {{cluster.project}}.{{cluster.dns.base}}
+  creationTimestamp: {{ build_tools_cluster.timestamp }}
+  name: {{ secrets.tags.project}}.{{ secrets.dns.base}}
 spec:
   additionalPolicies:
-    master: '{{ cluster.policy.master | tojson }}'
-    node: '{{ cluster.policy.node | tojson }}'
+    master: '{{ build_tools_cluster.policy.master | tojson }}'
+    node: '{{ build_tools_cluster.policy.node | tojson }}'
   api:
     dns: {}
   authorization:
     rbac: {}
   channel: stable
   cloudProvider: aws
-  configBase: s3://{{cluster.bucket}}/{{cluster.project}}.{{cluster.dns.base}}
-  dnsZone: {{ cluster.dns.zone }}
+  configBase: s3://{{ build_tools_cluster.bucket }}/{{ secrets.tags.project }}.{{ secrets.dns.base }}
+  dnsZone: {{ secrets.dns.zone }}
   etcdClusters:
   - etcdMembers:
-{% for zone in cluster.master.zones %}
-    - instanceGroup: {{zone}}-masters
-      name: main-master-{{zone[-1]}}
+{% for zone in build_tools_cluster.masters.zones %}
+    - instanceGroup: {{ zone }}-masters
+      name: main-master-{{ zone[-1] }}
 {% endfor %}
     name: main
   - etcdMembers:
-{% for zone in cluster.master.zones %}
-    - instanceGroup: {{zone}}-masters
-      name: events-master-{{zone[-1]}}
+{% for zone in build_tools_cluster.masters.zones %}
+    - instanceGroup: {{ zone }}-masters
+      name: events-master-{{ zone[-1] }}
 {% endfor %}
     name: events
   iam:
     allowContainerRegistry: true
     legacy: false
   kubernetesApiAccess:
-  - {{cluster.network.access}}
-  kubernetesVersion: {{cluster.version}}
-  masterInternalName: api.internal.{{cluster.project}}.{{cluster.dns.base}}
-  masterPublicName: api.{{cluster.project}}.{{cluster.dns.base}}
-  networkCIDR: {{cluster.network.cidr}}
-  networkID: {{cluster.network.id}}
+  - {{ build_tools_cluster.network.access }}
+  kubernetesVersion: {{ build_tools_cluster.version }}
+  masterInternalName: api.internal.{{ secrets.tags.project }}.{{ secrets.dns.base }}
+  masterPublicName: api.{{ secrets.tags.project }}.{{ secrets.dns.base }}
+  networkCIDR: {{ build_tools_cluster.network.cidr }}
+  networkID: {{ build_tools_cluster.network.id }}
   networking:
     weave:
       mtu: 8912
-  nonMasqueradeCIDR: {{cluster.network.nonmasquerade}}
+  nonMasqueradeCIDR: {{ build_tools_cluster.network.nonmasquerade }}
   sshAccess:
-  - {{cluster.network.access}}
-  subnets: {{cluster.network.subnets | tojson}}
+  - {{ build_tools_cluster.network.access }}
+  subnets: {{ build_tools_cluster.network.subnets | tojson}}
   target:
     terraform:
       providerExtraConfig:
         alias: kops
-        profile: {{ cluster.project }}-{{ cluster.env }}
+        profile: {{ secrets.tags.project }}-{{ secrets.tags.env }}
   topology:
     dns:
       type: Public
     masters: public
     nodes: public
 
-{% for zone in cluster.master.zones %}
+{% for zone in build_tools_cluster.masters.zones %}
 ---
 # auto-generated master group for zone {{zone}}
 
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: {{cluster.timestamp}}
+  creationTimestamp: {{ build_tools_cluster.timestamp }}
   labels:
-    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns.base}}
-  name: {{zone}}-masters
+    kops.k8s.io/cluster: {{ secrets.tags.project }}.{{ secrets.dns.base }}
+  name: {{ zone }}-masters
 spec:
-  image: {{cluster.image}}
-  machineType: {{cluster.master.type}}
-  maxSize: {{cluster.master.size.max}}
-  minSize: {{cluster.master.size.min}}
+  image: {{ build_tools_cluster.image }}
+  machineType: {{ build_tools_cluster.masters.type }}
+  maxSize: {{ build_tools_cluster.masters.size.max }}
+  minSize: {{ build_tools_cluster.masters.size.min }}
   cloudLabels:
 {% for k, v in secrets.tags.iteritems() %}
     {{k}}: "{{v}}"
@@ -85,37 +85,37 @@ spec:
   - {{zone}}
 
 {% endfor %}
-{% for ig in cluster.nodes %}
+{% for ig in build_tools_cluster.nodes %}
 ---
 # auto-generated node group for {{ig.name}}
 
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: {{cluster.timestamp}}
+  creationTimestamp: {{ build_tools_cluster.timestamp }}
   labels:
-    kops.k8s.io/cluster: {{cluster.project}}.{{cluster.dns.base}}
-  name: {{ig.name}}-nodes
+    kops.k8s.io/cluster: {{ secrets.tags.project }}.{{ secrets.dns.base }}
+  name: {{ ig.name }}-nodes
 spec:
-  image: {{cluster.image}}
-  machineType: {{ig.type}}
+  image: {{ build_tools_cluster.image }}
+  machineType: {{ ig.type }}
 {% if 'spot' in ig %}
-  maxPrice: "{{ig.spot}}"
+  maxPrice: "{{ ig.spot }}"
 {% endif %}
-  maxSize: {{ig.size.max}}
-  minSize: {{ig.size.min}}
+  maxSize: {{ ig.size.max }}
+  minSize: {{ ig.size.min }}
   cloudLabels:
 {% for k, v in secrets.tags.iteritems() %}
-    {{k}}: "{{v}}"
+    {{ k }}: "{{ v }}"
 {% endfor %}
   nodeLabels:
 {% for k, v in ig.tags.iteritems() %}
-    {{k}}: "{{v}}"
+    {{ k }}: "{{ v }}"
 {% endfor %}
   role: Node
   rootVolumeSize: 40
   rootVolumeType: gp2
   subnets:
-  - {{secrets.region.primary}}a
+  - {{ secrets.region.primary }}a
 
 {% endfor %}

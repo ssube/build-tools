@@ -1,16 +1,16 @@
 # Backend
 terraform {
   backend "s3" {
-    bucket  = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}-state"
-    key     = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+    bucket  = "{{ secrets.tags.project }}-{{ secrets.tags.env }}-state"
+    key     = "{{ secrets.tags.project }}-{{ secrets.tags.env }}"
     region  = "{{ secrets.region.primary }}"
-    profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+    profile = "{{ secrets.tags.project }}-{{ secrets.tags.env }}"
   }
 }
 
 # Providers
 provider "aws" {
-  profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+  profile = "{{ secrets.tags.project }}-{{ secrets.tags.env }}"
   region  = "{{ secrets.region.primary }}"
 }
 
@@ -22,13 +22,13 @@ provider "aws" {
 
 provider "aws" {
   alias   = "replica"
-  profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+  profile = "{{ secrets.tags.project }}-{{ secrets.tags.env }}"
   region  = "{{ secrets.region.replica }}"
 }
 
 provider "aws" {
   alias   = "site"
-  profile = "{{ secrets.tags.project }}-{{ secrets.tags.environment }}"
+  profile = "{{ secrets.tags.project }}-{{ secrets.tags.env }}"
   region  = "{{ secrets.region.global }}"
 }
 
@@ -36,7 +36,7 @@ provider "aws" {
 module "tags" {
   source = "{{ terraform_module }}/meta/tags"
 
-  environment = "{{ secrets.tags.environment }}"
+  environment = "{{ secrets.tags.env }}"
   owner       = "{{ secrets.tags.owner }}"
   project     = "{{ secrets.tags.project }}"
 }
@@ -57,13 +57,13 @@ module "cluster_network" {
 
   # remove these security groups while creating the k8s cluster
   peer_groups = [
-{% if cluster.peer %}
+{% if build_tools_cluster.peer %}
     "${module.cluster_k8s.master_security_group_ids}",
     "${module.cluster_k8s.node_security_group_ids}"
 {% endif %}
   ]
 
-  vpc_id = "{{ cluster.network.id }}"
+  vpc_id = "{{ build_tools_cluster.network.id }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -74,7 +74,7 @@ module "cluster_network" {
 module "website_bucket" {
   source = "{{ terraform_module }}/aws/s3/site_bucket"
 
-  bucket_name     = "{{ cluster.dns.base }}"
+  bucket_name     = "{{ secrets.dns.base }}"
   bucket_origin   = "${module.website_site.site_principal}"
 
   region_primary  = "{{ secrets.region.global }}"
@@ -90,8 +90,8 @@ module "website_site" {
   source = "{{ terraform_module }}/aws/cloudfront/site"
 
   cert_arn      = "{{ secrets.site.cert }}"
-  site_aliases  = ["www.{{ cluster.dns.base }}"]
-  site_domain   = "{{ cluster.dns.base }}"
+  site_aliases  = ["www.{{ secrets.dns.base }}"]
+  site_domain   = "{{ secrets.dns.base }}"
   source_bucket = "${module.website_bucket.bucket_domain}"
 
   tag_account     = "${module.tags.tag_account}"

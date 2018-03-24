@@ -37,9 +37,9 @@
 - name: template services
   tags: *service-tags
   template:
-    src: "{{item.name}}.yml"
-    dest: "{{output_dir.path}}/k8s-{{item.name}}.yml"
-  with_items: "{{cluster_services}}"
+    src: "{{ item.name }}.yml"
+    dest: "{{ output_dir.path }}/k8s-{{ item.name }}.yml"
+  with_items: "{{ cluster_services }}"
 
 - name: apply services
   tags: *service-tags
@@ -47,4 +47,4 @@
     KUBECTL_CONTEXT: "{{ context_path }}"
     KUBECTL_RESOURCE_FILE: "{{ output_dir.path }}/k8s-{{ item.name }}.yml"
   shell: kubectl --kubeconfig "{{ context_path }}" apply -f {{output_dir.path}}/k8s-{{item.name}}.yml
-  with_items: "{{cluster_services}}"
+  with_items: "{{ cluster_services }}"

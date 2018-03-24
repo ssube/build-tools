@@ -1,6 +1,6 @@
 ---
 
-gitlab:
+build_tools_gitlab:
   # ce/ee and the semver
   edition: ee
   version: 10.5.5

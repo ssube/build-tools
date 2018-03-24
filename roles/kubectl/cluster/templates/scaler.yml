@@ -62,14 +62,14 @@ spec:
             - --stderrthreshold=info
             - --cloud-provider=aws
             - --skip-nodes-with-local-storage=false
-{% for ig in cluster.nodes %}
+{% for ig in build_tools_cluster.nodes %}
 {% if 'auto' in ig %}
-            - --nodes={{ig.size.min}}:{{ig.size.max}}:{{ig.name}}-nodes.{{cluster.project}}.{{cluster.dns.base}}
+            - --nodes={{ ig.size.min }}:{{ ig.size.max }}:{{ ig.name }}-nodes.{{ secrets.tags.project }}.{{ secrets.dns.base }}
 {% endif %}
 {% endfor %}
           env:
             - name: AWS_REGION
-              value: {{secrets.region.primary}}
+              value: {{ secrets.region.primary }}
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt

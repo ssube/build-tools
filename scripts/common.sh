@@ -2,7 +2,7 @@
 
 if [[ "${DEBUG:-}" != "" ]];
 then
-  set -Eeuxo pipefail
+  set -Eeuxo pipefail || set -x
 fi
 
 ###

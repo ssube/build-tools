@@ -13,7 +13,7 @@ metadata:
   name: backup-job-exec
   namespace: default
   labels:
-    rbac.{{ cluster.name }}/backup-job-role: "true"
+    rbac.{{ build_tools_cluster.name }}/backup-job-role: "true"
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/exec"]
@@ -28,7 +28,7 @@ metadata:
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
-        rbac.{{ cluster.name }}/backup-job-role: "true"
+        rbac.{{ build_tools_cluster.name }}/backup-job-role: "true"
 rules: []
 
 ---

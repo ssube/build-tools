@@ -13,10 +13,10 @@
     AWS_REGION: "{{secrets.region.primary}}"
   # output files
   aws_s3:
-    dest: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
+    dest: "{{ output_dir.path }}/{{ secrets.tags.env }}-{{ item }}.yml"
     mode: get
-    bucket: "{{bucket_name}}"
-    object: "{{item}}.yml"
+    bucket: "{{ bucket_name }}"
+    object: "{{ item }}.yml"
   with_items:
     - output
 
@@ -24,8 +24,8 @@
   check_mode: no
   tags: *svc-tags
   fetch:
-    src: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
-    dest: "{{output_dir.path}}/{{inventory_hostname}}"
+    src: "{{ output_dir.path }}/{{ secrets.tags.env }}-{{ item }}.yml"
+    dest: "{{ output_dir.path }}/{{ inventory_hostname }}"
     fail_on_missing: yes
     flat: yes
   with_items:
@@ -36,7 +36,7 @@
   tags: *svc-tags
   # load everything from the env dir
   include_vars:
-    file: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
+    file: "{{ output_dir.path }}/{{ secrets.tags.env }}-{{ item }}.yml"
   with_items:
     - output
 
@@ -45,7 +45,7 @@
   tags: *svc-tags
   # TODO
   file:
-    path: "{{output_dir.path}}/{{cluster.env}}-{{item}}.yml"
+    path: "{{ output_dir.path }}/{{ secrets.tags.env }}-{{ item }}.yml"
     state: absent
   with_items:
     - output

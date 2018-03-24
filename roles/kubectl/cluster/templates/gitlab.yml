@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: gitlab
-        image: gitlab/gitlab-{{gitlab.edition}}:{{gitlab.version}}-{{gitlab.edition}}.0
+        image: gitlab/gitlab-{{ build_tools_gitlab.edition }}:{{ build_tools_gitlab.version }}-{{ build_tools_gitlab.edition }}.0
         livenessProbe:
           httpGet:
             path: /-/liveness
@@ -38,7 +38,7 @@ spec:
         volumeMounts: &gitlab_volumes
         - name: cluster-scripts
           mountPath: /scripts
-{% for name, body in gitlab.assets.iteritems() %}
+{% for name, body in build_tools_gitlab.assets.iteritems() %}
         - name: gitlab-assets
           mountPath: /assets/{{body.path | default(name)}}
           subPath: {{name}}
@@ -75,7 +75,7 @@ spec:
         secret:
           secretName: gitlab-assets
           items:
-{% for name, body in gitlab.assets.iteritems() %}
+{% for name, body in build_tools_gitlab.assets.iteritems() %}
           - key: {{name}}
             mode: {{body.mode}}
             path: {{body.path | default(name)}}
@@ -85,7 +85,7 @@ spec:
         secret:
           secretName: gitlab-config
           items:
-{% for name, body in gitlab.config.iteritems() %}
+{% for name, body in build_tools_gitlab.config.iteritems() %}
           - key: {{name}}
             mode: {{body.mode}}
             path: {{body.path | default(name)}}
@@ -111,8 +111,8 @@ metadata:
     app: gitlab
     dns: route53
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: "git.{{cluster.project}}.{{cluster.dns.base}}."
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: {{secrets.gitlab.cert}}
+    external-dns.alpha.kubernetes.io/hostname: "git.{{ secrets.tags.project}}.{{ secrets.dns.base }}."
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:{{ secrets.region.primary }}:{{ secrets.tags.account }}:certificate/{{ secrets.gitlab.cert }}
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
 spec:
@@ -137,7 +137,7 @@ metadata:
   name: gitlab-config
 type: Opaque
 data:
-{% for name, body in gitlab.config.iteritems() %}
+{% for name, body in build_tools_gitlab.config.iteritems() %}
   {{name}}: {{body.value | b64encode}}
 {% endfor %}
 
@@ -149,6 +149,6 @@ metadata:
   name: gitlab-assets
 type: Opaque
 data:
-{% for name, body in gitlab.assets.iteritems() %}
+{% for name, body in build_tools_gitlab.assets.iteritems() %}
   {{name}}: {{body.value | b64encode}}
 {% endfor %}
