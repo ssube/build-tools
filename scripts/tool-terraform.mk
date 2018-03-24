@@ -16,3 +16,7 @@ terraform-ready: ## plan terraform resource changes
 
 terraform-update: ## apply terraform resource changes (including the cluster module)
 	$(PREFIX_CMD) terraform apply $(TF_APPROVE) -input=false $(TF_PATH)
+
+## Others
+terraform-import: ## import TF_IMPORT_SRC as TF_IMPORT_DEST
+	$(PREFIX_CMD) terraform import -config=$(TF_PATH) module.$(TF_IMPORT_DEST) $(TF_IMPORT_SRC)
