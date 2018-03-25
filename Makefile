@@ -68,25 +68,42 @@ dependencies-update: dependencies-create ## install local dependencies (still re
 
 ## Cluster (stage 1)
 cluster-create: ## TODO
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 cluster-delete: ## delete a k8s cluster
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 cluster-ready: ## TODO
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 cluster-update: ## TODO
-cluster-create cluster-delete cluster-ready cluster-update: ANS_TAGS="$@" ansible-update
+	ANS_TAGS="$@" $(MAKE) ansible-update
 
 ## Server (stage 2)
 server-create: ## create the terraform definitions
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 server-delete: ## noop
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 server-ready: ## ensure terraform state matches the remote state
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 server-update: ## update the terraform definitions
-server-create server-delete server-ready server-update: ANS_TAGS="$@" ansible-update
+	ANS_TAGS="$@" $(MAKE) ansible-update
 
 ## Service (stage 3)
 service-create: ## apply service configuration within the cluster
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 service-delete: ## TODO
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 service-ready: ## render service configuration for the cluster without applying
+	ANS_TAGS="$@" $(MAKE) ansible-update
+
 service-update: ## TODO
-service-create service-delete service-ready service-update: ANS_TAGS="$@"
-service-create service-delete service-ready service-update: ansible-update
+	ANS_TAGS="$@" $(MAKE) ansible-update
 
 # Meta
 ## Misc
