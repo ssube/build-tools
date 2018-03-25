@@ -53,4 +53,4 @@
     - server-create
     - server-update
   environment: *kops-env
-  shell: make kops-terraform
+  shell: make kops-update-tf

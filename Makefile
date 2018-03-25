@@ -71,24 +71,22 @@ cluster-create: ## TODO
 cluster-delete: ## delete a k8s cluster
 cluster-ready: ## TODO
 cluster-update: ## TODO
-cluster-create cluster-delete cluster-ready cluster-update:
-	$(PREFIX_CMD) ansible-playbook --tags $@ $(ANS_ARGS) $(ANS_SITE)
+cluster-create cluster-delete cluster-ready cluster-update: ANS_TAGS="$@" ansible-update
 
 ## Server (stage 2)
 server-create: ## create the terraform definitions
 server-delete: ## noop
 server-ready: ## ensure terraform state matches the remote state
 server-update: ## update the terraform definitions
-server-create server-delete server-ready server-update:
-	$(PREFIX_CMD) ansible-playbook --tags $@ $(ANS_ARGS) $(ANS_SITE)
+server-create server-delete server-ready server-update: ANS_TAGS="$@" ansible-update
 
 ## Service (stage 3)
 service-create: ## apply service configuration within the cluster
 service-delete: ## TODO
 service-ready: ## render service configuration for the cluster without applying
 service-update: ## TODO
-service-create service-delete service-ready service-update:
-	$(PREFIX_CMD) ansible-playbook --tags $@ $(ANS_ARGS) $(ANS_SITE)
+service-create service-delete service-ready service-update: ANS_TAGS="$@"
+service-create service-delete service-ready service-update: ansible-update
 
 # Meta
 ## Misc
