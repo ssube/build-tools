@@ -7,13 +7,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: gitlab
+      k8s-app: gitlab
   serviceName: gitlab
   replicas: 1
   template:
     metadata:
       labels:
-        app: gitlab
+        k8s-app: gitlab
     spec:
       containers:
       - name: gitlab
@@ -44,9 +44,12 @@ spec:
           subPath: {{name}}
 {% endfor %}
         - name: gitlab-config
-          mountPath: /etc/gitlab
+          mountPath: /config
         - name: gitlab-data
           mountPath: /data
+        - name: gitlab-config
+          mountPath: /etc/gitlab
+          readOnly: false
       initContainers:
       - name: gitlab-init
         image: busybox
@@ -60,6 +63,8 @@ spec:
             mkdir -p "${DATA_PATH}";
           fi;
           chown 998:998 "${DATA_PATH}";
+          df -h;
+          ls -lha /assets /config /data /etc/gitlab;
         volumeMounts: *gitlab_volumes
       nodeSelector:
         cluster: server
@@ -108,7 +113,7 @@ apiVersion: v1
 metadata:
   name: gitlab
   labels:
-    app: gitlab
+    k8s-app: gitlab
     dns: route53
   annotations:
     external-dns.alpha.kubernetes.io/hostname: "git.{{ secrets.tags.project}}.{{ secrets.dns.base }}."
@@ -126,7 +131,7 @@ spec:
     port: 443
     targetPort: http
   selector:
-    app: gitlab
+    k8s-app: gitlab
   type: LoadBalancer
 
 ---

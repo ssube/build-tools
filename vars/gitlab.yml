@@ -3,7 +3,7 @@
 build_tools_gitlab:
   # ce/ee and the semver
   edition: ee
-  version: 10.5.5
+  version: 10.6.2
 
   assets:
     sshd_config:
@@ -12,11 +12,11 @@ build_tools_gitlab:
 
   config:
     gitlab.rb:
-      mode: "0400"
+      mode: "0444"
       value: "{{lookup('template', '{{ role_path }}/templates/gitlab/config.rb')}}"
 
     gitlab-secrets.json:
-      mode: "0600"
+      mode: "0666"
       value: "{{secrets.gitlab.secrets | to_json}}"
 
     ssh_host_ecdsa_key:
@@ -44,7 +44,7 @@ build_tools_gitlab:
       value: "{{secrets.gitlab.ssh_keys.rsa.pub}}"
 
   runner:
-    version: 10.4.0
+    version: 10.6.0
 
     config:
       script:
