@@ -5,6 +5,8 @@ build_tools_gitlab:
   edition: ee
   version: 10.6.2
 
+  disk: 20
+
   assets:
     sshd_config:
       mode: "0400"

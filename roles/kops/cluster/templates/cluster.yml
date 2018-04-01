@@ -79,7 +79,7 @@ spec:
   nodeLabels:
     cluster: master
   role: Master
-  rootVolumeSize: 40
+  rootVolumeSize: {{ build_tools_cluster.masters.disk }}
   rootVolumeType: gp2
   subnets:
   - {{zone}}
@@ -113,7 +113,7 @@ spec:
     {{ k }}: "{{ v }}"
 {% endfor %}
   role: Node
-  rootVolumeSize: 40
+  rootVolumeSize: {{ ig.disk }}
   rootVolumeType: gp2
   subnets:
   - {{ secrets.region.primary }}a

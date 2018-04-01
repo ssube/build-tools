@@ -30,6 +30,7 @@ build_tools_cluster:
         zone: "{{secrets.region.primary}}c"
 
   masters:
+    disk: 20
     # size is for each zone, masters are evenly distributed
     size:
       min: 1
@@ -43,6 +44,7 @@ build_tools_cluster:
   nodes:
     - name: server
       type: t2.medium
+      disk: 20
       size:
         min: 1
         max: 2
@@ -54,6 +56,7 @@ build_tools_cluster:
 
     - name: runner
       type: c4.xlarge
+      disk: 40
       auto: true
       spot: 0.05
       size:
