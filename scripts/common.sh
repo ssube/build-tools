@@ -1,5 +1,7 @@
 #! /bin/bash
 
+BUILD_TOOLS_ROOT="$(dirname ${BASH_SOURCE[0]})"
+
 if [[ "${DEBUG:-}" != "" ]];
 then
   set -Eeuxo pipefail || set -x
@@ -48,5 +50,5 @@ function echo_error() {
 # include all other common scripts
 ###
 
-source "$(dirname ${0})/common-colors.sh"
-source "$(dirname ${0})/common-k8s.sh"
+source "${BUILD_TOOLS_ROOT}/common-colors.sh"
+source "${BUILD_TOOLS_ROOT}/common-k8s.sh"

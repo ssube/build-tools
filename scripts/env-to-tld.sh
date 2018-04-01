@@ -1,6 +1,6 @@
 #! /bin/bash
 
-source "$(dirname ${0})/common.sh"
+source "$(dirname ${BASH_SOURCE[0]})/common.sh"
 
 ###
 # convert an environment name to a top-level domain name
