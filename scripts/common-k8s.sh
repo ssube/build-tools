@@ -17,7 +17,7 @@ function exec_in_pod() {
 
 function find_pod() {
   name=${1}
-  pod=$(kubectl get pods -l app=${name} -o jsonpath='{.items[0].metadata.name}')
+  pod=$(kubectl get pods -l k8s-app=${name} -o jsonpath='{.items[0].metadata.name}')
 
   echo ${pod}
 }

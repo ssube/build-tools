@@ -78,14 +78,17 @@ spec:
               image: apextoaster/kube
               args:
                 - /bin/bash
-                - -c
-                - |
-                  set -euxo pipefail;
-                  echo "Starting backup: $(date)";
-                  kubectl get pods -o wide;
-                  kubectl exec gitlab-0 -- gitlab-rake gitlab:backup:create SKIP=artifacts,builds,registry
-                  echo "Finished backup: $(date)";
+                - /scripts/gitlab-backup.sh
+              volumeMounts:
+                - name: cluster-scripts
+                  mountPath: /scripts
+
           nodeSelector:
             cluster: server
           restartPolicy: OnFailure
           serviceAccountName: backup-job
+          volumes:
+            - name: cluster-scripts
+              configMap:
+                name: cluster-scripts
+                defaultMode: 0755
