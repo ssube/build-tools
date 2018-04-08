@@ -9,8 +9,9 @@ source "$(dirname ${BASH_SOURCE[0]})/common.sh"
 # your new script
 ###
 
-begin_color 4
+begin_color $(std_color start)
 echo "This is a template script."
-begin_color 6
+
+begin_color $(std_color progress)
 echo "Make sure to include the header when adding helper scripts to this directory."
 close_color
