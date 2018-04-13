@@ -4,7 +4,6 @@ external_url 'https://{{ secrets.gitlab.url }}'
 external_url 'https://git.{{ secrets.tags.project }}.{{ secrets.dns.base }}'
 {% endif %}
 
-gitlab_rails['extra_google_analytics_id'] = '{{secrets.google.analytics}}'
 gitlab_rails['gitlab_username_changing_enabled'] = false
 gitlab_rails['webhook_timeout'] = 2
 

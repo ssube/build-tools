@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         k8s-app: gitlab
+        k8s-svc: gitlab
     spec:
       containers:
       - name: gitlab
@@ -131,7 +132,7 @@ spec:
     port: 443
     targetPort: http
   selector:
-    k8s-app: gitlab
+    k8s-svc: gitlab
   type: LoadBalancer
 
 ---
