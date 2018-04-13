@@ -30,10 +30,16 @@ check_interval = 30
     image = "apextoaster/base"
     namespace = "gitlab-jobs"
     namespace_overwrite_allowed = ""
-    poll_interval = 30
-    poll_timeout = 600
     privileged = true
     pull_policy = "always"
+
+    cpu_limit = "4000m"
+    cpu_request = "500m"
+    memory_request = "500Mi"
+    memory_limit = "4Gi"
+
+    poll_interval = 30
+    poll_timeout = 600
     service_account_overwrite_allowed = ""
 
     [runners.kubernetes.node_selector]
