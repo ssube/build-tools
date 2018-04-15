@@ -1,5 +1,48 @@
 ---
 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-iam
+  namespace: cluster-service
+  labels:
+    k8s-app: cluster-iam
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-iam
+  labels:
+    k8s-app: cluster-iam
+
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces", "pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-iam
+  labels:
+    k8s-app: cluster-iam
+
+subjects:
+  - kind: ServiceAccount
+    name: cluster-iam
+    namespace: cluster-service
+
+roleRef:
+  kind: ClusterRole
+  name: cluster-iam
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
