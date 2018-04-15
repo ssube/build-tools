@@ -41,8 +41,8 @@ resource "aws_cloudfront_distribution" "site_distro" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = "${var.cert_arn}"
-    minimum_protocol_version = "TLSv1"
+    acm_certificate_arn      = "arn:aws:acm:us-east-1:${var.tag_account}:certificate/${var.cert_arn}"
+    minimum_protocol_version = "TLSv1_2016"
     ssl_support_method       = "sni-only"
   }
 
