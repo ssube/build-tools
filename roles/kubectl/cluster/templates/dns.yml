@@ -50,6 +50,9 @@ spec:
     metadata:
       labels:
         k8s-app: cluster-dns
+      annotations:
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:policy/{{ secrets.tags.project }}-cluster-dns"
+
     spec:
       containers:
         - name: cluster-dns

@@ -1,12 +1,16 @@
 # Tags
 variable "tag_account" {}
+
 variable "tag_environment" {}
 variable "tag_owner" {}
 variable "tag_project" {}
 
 # User
 variable "user_name" {}
-variable "user_policy" {
+
+variable "user_policy_count" {}
+
+variable "user_policy_arns" {
   type = "list"
 }
 

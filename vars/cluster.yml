@@ -44,7 +44,7 @@ build_tools_cluster:
   nodes:
     - name: server
       type: t2.medium
-      disk: 20
+      disk: 40
       size:
         min: 1
         max: 2

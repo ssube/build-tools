@@ -1,5 +1,6 @@
 # Tags
 variable "tag_account" {}
+
 variable "tag_environment" {}
 variable "tag_owner" {}
 variable "tag_project" {}
@@ -8,7 +9,9 @@ variable "tag_project" {}
 variable "policy_actions" {
   type = "list"
 }
+
 variable "policy_name" {}
+
 variable "policy_resources" {
   type = "list"
 }

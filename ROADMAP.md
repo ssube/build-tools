@@ -19,3 +19,6 @@ Valuable features that need more planning:
   - removes dependency on kops
   - support mixed-cloud clusters
   - use the `githubixx.kubernetes-*` roles?
+- [ ] terraform rename helper
+  - renaming terraform resource is painful, but necessary
+  - write a helper script to delete the resource from state and import it under a new name

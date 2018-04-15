@@ -181,10 +181,51 @@ module "cluster_database" {
 module "policy_backup" {
   source = "{{ terraform_module }}/aws/iam/policy"
 
-  policy_name = "backup"
+  policy_name = "{{ secrets.tags.project }}-backup"
 
   policy_actions = [
-    "s3:*",
+    "s3:GetObject",
+    "s3:ListObjects",
+    "s3:PutObject",
+  ]
+
+  policy_resources = [
+    "arn:aws:s3:::${module.cluster_backup.bucket_name}",
+    "arn:aws:s3:::${module.cluster_backup.bucket_name}/*",
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "policy_cluster_dns" {
+  source = "{{ terraform_module }}/aws/iam/policy"
+
+  policy_name = "{{ secrets.tags.project }}-cluster-dns"
+
+  policy_actions = [
+    "route53:ChangeResourceRecordSets",
+  ]
+
+  policy_resources = [
+    "arn:aws:route53:::hostedzone/{{ secrets.dns.zone }}",
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "policy_cluster_scaler" {
+  source = "{{ terraform_module }}/aws/iam/policy"
+
+  policy_name = "{{ secrets.tags.project }}-cluster-scaler"
+
+  policy_actions = [
+    "autoscaling:*",
   ]
 
   policy_resources = [
@@ -197,18 +238,104 @@ module "policy_backup" {
   tag_project     = "${module.tags.tag_project}"
 }
 
-module "policy_runner" {
+module "policy_gitlab_server" {
   source = "{{ terraform_module }}/aws/iam/policy"
 
-  policy_name = "runner"
+  policy_name = "{{ secrets.tags.project }}-gitlab-server"
 
+  # TODO: safely allow deleting cache objects
   policy_actions = [
-    "s3:*",
+    "s3:GetObject",
+    "s3:ListBucket",
+    "s3:ListObjects",
+    "s3:PutObject",
   ]
 
   policy_resources = [
-    "*",
+    "arn:aws:s3:::${module.cluster_backup.bucket_name}",
+    "arn:aws:s3:::${module.cluster_backup.bucket_name}/*",
+    "arn:aws:s3:::${module.runner_cache.bucket_name}",
+    "arn:aws:s3:::${module.runner_cache.bucket_name}/*",
   ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "policy_gitlab_runner" {
+  source = "{{ terraform_module }}/aws/iam/policy"
+
+  policy_name = "{{ secrets.tags.project }}-gitlab-runner"
+
+  policy_actions = [
+    "s3:*Object",
+    "s3:ListBucket",
+    "s3:ListObjects",
+  ]
+
+  policy_resources = [
+    "arn:aws:s3:::${module.runner_cache.bucket_name}",
+    "arn:aws:s3:::${module.runner_cache.bucket_name}/*",
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+# Roles
+module "role_cluster_dns" {
+  source = "{{ terraform_module }}/aws/iam/role"
+
+  role_name         = "{{ secrets.tags.project }}-cluster-dns"
+  role_policy_count = 1
+  role_policy_arns  = ["${module.policy_cluster_dns.policy_arn}"]
+  role_principals   = ["ec2.amazonaws.com"]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "role_cluster_scaler" {
+  source = "{{ terraform_module }}/aws/iam/role"
+
+  role_name         = "{{ secrets.tags.project }}-cluster-scaler"
+  role_policy_count = 1
+  role_policy_arns  = ["${module.policy_cluster_scaler.policy_arn}"]
+  role_principals   = ["ec2.amazonaws.com"]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "role_gitlab_server" {
+  source = "{{ terraform_module }}/aws/iam/role"
+
+  role_name         = "{{ secrets.tags.project }}-gitlab-server"
+  role_policy_count = 1
+  role_policy_arns  = ["${module.policy_gitlab_server.policy_arn}"]
+  role_principals   = ["ec2.amazonaws.com"]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "role_gitlab_runner" {
+  source = "{{ terraform_module }}/aws/iam/role"
+
+  role_name         = "{{ secrets.tags.project }}-gitlab-runner"
+  role_policy_count = 1
+  role_policy_arns  = ["${module.policy_gitlab_runner.policy_arn}"]
+  role_principals   = ["ec2.amazonaws.com"]
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -222,7 +349,9 @@ module "bot_{{ bot.name }}" {
 
   user_name = "{{ bot.name }}"
 
-  user_policy = [
+  user_policy_count = "{{ bot.policy | length }}"
+
+  user_policy_arns = [
     # {% for policy in bot.policy %}
     "${module.policy_{{ policy }}.policy_arn}",
 

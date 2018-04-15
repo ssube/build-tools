@@ -15,6 +15,9 @@ spec:
       labels:
         k8s-app: gitlab
         k8s-svc: gitlab
+      annotations:
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:policy/{{ secrets.tags.project }}-gitlab-server"
+
     spec:
       containers:
       - name: gitlab
