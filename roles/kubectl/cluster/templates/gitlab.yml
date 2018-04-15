@@ -62,9 +62,7 @@ spec:
       initContainers:
       - name: gitlab-init
         image: "apextoaster/kube:master"
-        env:
-          - name: DEBUG
-            value: "true"
+
         command:
           - /bin/bash
         args:
