@@ -1,3 +1,4 @@
+#jinja2: trim_blocks:False
 # Backend
 terraform {
   backend "s3" {
@@ -44,27 +45,30 @@ module "tags" {
 module "cluster_network" {
   source = "{{ terraform_module }}/aws/vpc/network"
 
-  subnet_cidr   = [
+  subnet_cidr = [
     "{{ secrets.network.prefix }}.10.0/24",
     "{{ secrets.network.prefix }}.11.0/24",
-    "{{ secrets.network.prefix }}.12.0/24"
+    "{{ secrets.network.prefix }}.12.0/24",
   ]
-  subnet_zones  = [
+
+  subnet_zones = [
     "{{ secrets.region.primary }}a",
     "{{ secrets.region.primary }}b",
-    "{{ secrets.region.primary }}c"
+    "{{ secrets.region.primary }}c",
   ]
 
   # remove these security groups while creating the k8s cluster
   peer_groups = [
-{% if build_tools_cluster.peer %}
+    # {% if build_tools_cluster.peer %}
     "${module.cluster_k8s.master_security_group_ids}",
-    "${module.cluster_k8s.node_security_group_ids}"
-{% endif %}
+
+    "${module.cluster_k8s.node_security_group_ids}",
+
+    # {% endif -%}
+    "",
   ]
 
-  vpc_id = "{{ build_tools_cluster.network.id }}"
-
+  vpc_id          = "{{ build_tools_cluster.network.id }}"
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
   tag_owner       = "${module.tags.tag_owner}"
@@ -74,11 +78,11 @@ module "cluster_network" {
 module "website_bucket" {
   source = "{{ terraform_module }}/aws/s3/site_bucket"
 
-  bucket_name     = "{{ secrets.dns.base }}"
-  bucket_origin   = "${module.website_site.site_principal}"
+  bucket_name   = "{{ secrets.dns.base }}"
+  bucket_origin = "${module.website_site.site_principal}"
 
-  region_primary  = "{{ secrets.region.global }}"
-  region_replica  = "{{ secrets.region.replica }}"
+  region_primary = "{{ secrets.region.global }}"
+  region_replica = "{{ secrets.region.replica }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -90,8 +94,7 @@ module "website_site" {
   source = "{{ terraform_module }}/aws/cloudfront/site"
 
   cert_arn      = "{{ secrets.site.cert }}"
-  site_aliases  = ["www.{{ secrets.dns.base }}"]
-  site_domain   = "{{ secrets.dns.base }}"
+  site_aliases  = ["www.{{ secrets.dns.site }}"]
   source_bucket = "${module.website_bucket.bucket_domain}"
 
   tag_account     = "${module.tags.tag_account}"
@@ -103,14 +106,17 @@ module "website_site" {
 module "cluster_backup" {
   source = "{{ terraform_module }}/aws/s3/durable_bucket"
 
-  bucket_name     = "${module.tags.tag_project}-backup"
-  bucket_writers  = [
+  bucket_name = "${module.tags.tag_project}-backup"
+
+  bucket_writers = [
     "arn:aws:iam::${module.tags.tag_account}:root",
-    "arn:aws:iam::719734659904:root"  # papertrail log writer
+
+    # papertrail log writer
+    "arn:aws:iam::719734659904:root",
   ]
 
-  region_primary  = "{{ secrets.region.primary }}"
-  region_replica  = "{{ secrets.region.replica }}"
+  region_primary = "{{ secrets.region.primary }}"
+  region_replica = "{{ secrets.region.replica }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -121,13 +127,14 @@ module "cluster_backup" {
 module "runner_cache" {
   source = "{{ terraform_module }}/aws/s3/temporary_bucket"
 
-  bucket_name     = "${module.tags.tag_project}-runner-cache"
-  bucket_writers  = [
-    "arn:aws:iam::${module.tags.tag_account}:root"
+  bucket_name = "${module.tags.tag_project}-runner-cache"
+
+  bucket_writers = [
+    "arn:aws:iam::${module.tags.tag_account}:root",
   ]
 
-  region_primary  = "{{ secrets.region.primary }}"
-  region_replica  = "{{ secrets.region.replica }}"
+  region_primary = "{{ secrets.region.primary }}"
+  region_replica = "{{ secrets.region.replica }}"
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -159,11 +166,11 @@ module "cluster_database_password" {
 module "cluster_database" {
   source = "{{ terraform_module }}/aws/rds"
 
-  db_name         = "gitlab"
-  db_username     = "{{ secrets.database.user }}"
-  db_password     = "${module.cluster_database_password.token_value}"
-  db_secgroups    = ["${module.cluster_network.managed_group}"]
-  db_subnets      = ["${module.cluster_network.managed_subnets}"]
+  db_name      = "gitlab"
+  db_username  = "{{ secrets.database.user }}"
+  db_password  = "${module.cluster_database_password.token_value}"
+  db_secgroups = ["${module.cluster_network.managed_group}"]
+  db_subnets   = ["${module.cluster_network.managed_subnets}"]
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -175,11 +182,13 @@ module "policy_backup" {
   source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_name = "backup"
+
   policy_actions = [
-    "s3:*"
+    "s3:*",
   ]
+
   policy_resources = [
-    "*"
+    "*",
   ]
 
   tag_account     = "${module.tags.tag_account}"
@@ -192,11 +201,13 @@ module "policy_runner" {
   source = "{{ terraform_module }}/aws/iam/policy"
 
   policy_name = "runner"
+
   policy_actions = [
-    "s3:*"
+    "s3:*",
   ]
+
   policy_resources = [
-    "*"
+    "*",
   ]
 
   tag_account     = "${module.tags.tag_account}"
@@ -205,15 +216,18 @@ module "policy_runner" {
   tag_project     = "${module.tags.tag_project}"
 }
 
-{% for bot in secrets.users.bots %}
+# {% for bot in secrets.users.bots %}
 module "bot_{{ bot.name }}" {
   source = "{{ terraform_module }}/aws/iam/bot"
 
-  user_name   = "{{ bot.name }}"
+  user_name = "{{ bot.name }}"
+
   user_policy = [
-{% for policy in bot.policy %}
+    # {% for policy in bot.policy %}
     "${module.policy_{{ policy }}.policy_arn}",
-{% endfor %}
+
+    # {% endfor -%}
+    "",
   ]
 
   tag_account     = "${module.tags.tag_account}"
@@ -221,7 +235,8 @@ module "bot_{{ bot.name }}" {
   tag_owner       = "${module.tags.tag_owner}"
   tag_project     = "${module.tags.tag_project}"
 }
-{% endfor %}
+
+# {% endfor %}
 
 module "cluster_output" {
   source = "{{ terraform_module }}/aws/s3/template_object"
@@ -229,6 +244,7 @@ module "cluster_output" {
   bucket_name = "${module.tags.tag_project}"
 
   object_name = "output.yml"
+
   object_body = <<EOF
 output:
   backup:
