@@ -1,5 +1,6 @@
 # Tags
 variable "tag_account" {}
+
 variable "tag_environment" {}
 variable "tag_owner" {}
 variable "tag_project" {}
@@ -11,7 +12,6 @@ variable "cert_arn" {}
 variable "site_aliases" {
   type = "list"
 }
-variable "site_domain" {}
 
 # Source
 variable "source_bucket" {}

@@ -1,6 +1,4 @@
-resource "aws_cloudfront_origin_access_identity" "site_identity" {
-
-}
+resource "aws_cloudfront_origin_access_identity" "site_identity" {}
 
 resource "aws_cloudfront_distribution" "site_distro" {
   provider = "aws.site"
@@ -10,16 +8,16 @@ resource "aws_cloudfront_distribution" "site_distro" {
     origin_id   = "site_bucket"
   }
 
-  aliases     = ["${var.site_aliases}"]
-  enabled     = true
-  is_ipv6_enabled = true
+  aliases             = ["${var.site_aliases}"]
+  enabled             = true
+  is_ipv6_enabled     = true
   default_root_object = "index.html"
-  price_class = "PriceClass_100"
+  price_class         = "PriceClass_100"
 
   default_cache_behavior {
-    allowed_methods   = ["GET", "HEAD", "OPTIONS"]
-    cached_methods    = ["GET", "HEAD"]
-    target_origin_id  = "site_bucket"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "site_bucket"
 
     forwarded_values {
       query_string = false
@@ -29,9 +27,9 @@ resource "aws_cloudfront_distribution" "site_distro" {
       }
     }
 
-    default_ttl       = 3000
-    max_ttl           = 86400
-    min_ttl           = 0
+    default_ttl = 3000
+    max_ttl     = 86400
+    min_ttl     = 0
 
     viewer_protocol_policy = "allow-all"
   }
@@ -43,9 +41,9 @@ resource "aws_cloudfront_distribution" "site_distro" {
   }
 
   viewer_certificate {
-    acm_certificate_arn = "${var.cert_arn}"
+    acm_certificate_arn      = "${var.cert_arn}"
     minimum_protocol_version = "TLSv1"
-    ssl_support_method  = "sni-only"
+    ssl_support_method       = "sni-only"
   }
 
   tags {
