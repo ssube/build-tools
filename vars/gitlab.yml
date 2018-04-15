@@ -3,7 +3,7 @@
 build_tools_gitlab:
   # ce/ee and the semver
   edition: ee
-  version: 10.6.3
+  version: 10.6.4
 
   disk: 20
 
