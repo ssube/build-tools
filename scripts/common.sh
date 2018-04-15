@@ -43,6 +43,7 @@ function echo_error() {
     echo "${msg}"
   fi
 
+  sleep 5
   exit 1
 }
 

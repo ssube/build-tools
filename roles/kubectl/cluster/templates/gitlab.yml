@@ -1,7 +1,7 @@
 ---
 
 kind: StatefulSet
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: gitlab
 spec:
@@ -159,7 +159,7 @@ metadata:
 type: Opaque
 data:
 {% for name, body in build_tools_gitlab.config.iteritems() %}
-  {{name}}: {{body.value | b64encode}}
+  {{ name }}: {{ body.value }}
 {% endfor %}
 
 ---
@@ -171,5 +171,5 @@ metadata:
 type: Opaque
 data:
 {% for name, body in build_tools_gitlab.assets.iteritems() %}
-  {{name}}: {{body.value | b64encode}}
+  {{ name }}: {{ body.value }}
 {% endfor %}

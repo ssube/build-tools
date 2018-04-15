@@ -6,6 +6,9 @@ metadata:
   name: gitlab-jobs
   labels:
     k8s-app: gitlab-runner
+  annotations:
+    iam.amazonaws.com/allowed-roles: |
+      []
 
 ---
 

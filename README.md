@@ -42,6 +42,10 @@ The following tools will be set up within the cluster:
 
 - [Gitlab](https://about.gitlab.com/) (version control and CI)
 - [Gitlab runners](https://docs.gitlab.com/runner/) (AWS spot instances and optionally dedicated servers)
+- Cluster services
+  - [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler)
+  - [external-dns](https://github.com/kubernetes-incubator/external-dns)
+  - [kube2iam](https://github.com/jtblin/kube2iam)
 
 Using the AWS services:
 

@@ -10,40 +10,40 @@ build_tools_gitlab:
   assets:
     sshd_config:
       mode: "0400"
-      value: "{{lookup('template', '{{ role_path }}/templates/gitlab/sshd_config')}}"
+      value: "{{ lookup('template', '{{ role_path }}/templates/gitlab/sshd_config') | b64encode }}"
 
   config:
     gitlab.rb:
       mode: "0444"
-      value: "{{lookup('template', '{{ role_path }}/templates/gitlab/config.rb')}}"
+      value: "{{ lookup('template', '{{ role_path }}/templates/gitlab/config.rb') | b64encode }}"
 
     gitlab-secrets.json:
       mode: "0666"
-      value: "{{secrets.gitlab.secrets | to_json}}"
+      value: "{{ secrets.gitlab.secrets | to_nice_json(indent=2) | b64encode }}"
 
     ssh_host_ecdsa_key:
       mode: "0400"
-      value: "{{secrets.gitlab.ssh_keys.ecdsa.key}}"
+      value: "{{ secrets.gitlab.ssh_keys.ecdsa.key | b64encode }}"
 
     ssh_host_ecdsa_key.pub:
       mode: "0400"
-      value: "{{secrets.gitlab.ssh_keys.ecdsa.pub}}"
+      value: "{{ secrets.gitlab.ssh_keys.ecdsa.pub | b64encode }}"
 
     ssh_host_ed25519_key:
       mode: "0400"
-      value: "{{secrets.gitlab.ssh_keys.ed25519.key}}"
+      value: "{{ secrets.gitlab.ssh_keys.ed25519.key | b64encode }}"
 
     ssh_host_ed25519_key.pub:
       mode: "0400"
-      value: "{{secrets.gitlab.ssh_keys.ed25519.pub}}"
+      value: "{{ secrets.gitlab.ssh_keys.ed25519.pub | b64encode }}"
 
     ssh_host_rsa_key:
       mode: "0400"
-      value: "{{secrets.gitlab.ssh_keys.rsa.key}}"
+      value: "{{ secrets.gitlab.ssh_keys.rsa.key | b64encode }}"
 
     ssh_host_rsa_key.pub:
       mode: "0400"
-      value: "{{secrets.gitlab.ssh_keys.rsa.pub}}"
+      value: "{{ secrets.gitlab.ssh_keys.rsa.pub | b64encode }}"
 
   runner:
     version: 10.6.0
@@ -52,12 +52,12 @@ build_tools_gitlab:
       script:
         mode: 0700
         path: setup.sh
-        value: "{{lookup('template', '{{ role_path }}/templates/runner/setup.sh')}}"
+        value: "{{ lookup('template', '{{ role_path }}/templates/runner/setup.sh') }}"
 
       template:
         mode: 0600
         path: config.toml
-        value: "{{lookup('template', '{{ role_path }}/templates/runner/config.toml')}}"
+        value: "{{ lookup('template', '{{ role_path }}/templates/runner/config.toml') }}"
 
     secrets:
       docker:

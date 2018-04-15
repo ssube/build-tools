@@ -36,13 +36,17 @@ then
   if [[ -f "${config_secrets}" ]];
   then
     begin_color 3
-    echo "comparsing existing secrets"
+    echo "comparing existing secrets"
     close_color
 
-    diff /config/gitlab-secrets.json "${config_secrets}"
+    sleep 3000
+
+    diff_secrets="$(diff /config/gitlab-secrets.json "${config_secrets}")"
 
     if [[ $? != 0 ]];
     then
+      echo "${diff_secrets}"
+      sleep 3000
       echo_error "difference detected in gitlab secrets"
     fi
   fi
