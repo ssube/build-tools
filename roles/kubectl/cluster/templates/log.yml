@@ -76,7 +76,7 @@ spec:
                 secretKeyRef:
                   name: cluster-log-destination
                   key: papertrail-destination
-          image: gliderlabs/logspout:master
+          image: "gliderlabs/logspout:master"
           name: cluster-log
           volumeMounts:
             - name: log

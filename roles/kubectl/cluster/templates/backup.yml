@@ -75,7 +75,7 @@ spec:
         spec:
           containers:
             - name: gitlab-backup
-              image: apextoaster/kube
+              image: "apextoaster/kube:master"
               args:
                 - /bin/bash
                 - /scripts/gitlab-backup.sh

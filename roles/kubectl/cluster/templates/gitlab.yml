@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: gitlab
-        image: gitlab/gitlab-{{ build_tools_gitlab.edition }}:{{ build_tools_gitlab.version }}-{{ build_tools_gitlab.edition }}.0
+        image: "gitlab/gitlab-{{ build_tools_gitlab.edition }}:{{ build_tools_gitlab.version }}-{{ build_tools_gitlab.edition }}.0"
 
         # ports
         ports:
@@ -61,7 +61,7 @@ spec:
       # init
       initContainers:
       - name: gitlab-init
-        image: apextoaster/kube:latest
+        image: "apextoaster/kube:master"
         env:
           - name: DEBUG
             value: "true"

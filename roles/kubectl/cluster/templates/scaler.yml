@@ -46,7 +46,7 @@ spec:
         app: cluster-scaler
     spec:
       containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v1.0.3
+        - image: "gcr.io/google_containers/cluster-autoscaler:v1.0.3"
           name: cluster-scaler
           resources:
             limits:
