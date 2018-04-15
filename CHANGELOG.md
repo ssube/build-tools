@@ -17,6 +17,16 @@ remain `0` until a stable release), but will be noted here. These may be used in
 #### 0.0.11
 
 - [kube2iam](https://github.com/jtblin/kube2iam) for IAM roles in kops cluster
+  - `cluster-iam` daemon
+  - `cluster-iam` cluster role
+  - iam roles for:
+    - cluster dns
+    - cluster scaler
+    - gitlab server
+    - gitlab runner
+  - annotate services with the roles listed above
+- use stable resource versions (replace `extensions/v1beta1` and `v1alpha2` stuff with `apps/v1`, `batch/v1`)
+- gitlab config needs to be `b64encode`d *before* being passed to template (to preserve whitespace)
 
 #### 0.0.10
 
