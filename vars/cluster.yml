@@ -5,8 +5,8 @@ build_tools_cluster:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20171121.1
   name: "{{ secrets.tags.project }}.{{ secrets.dns.base }}"
   project: "{{ secrets.tags.project }}"
-  timestamp: "2018-01-01T00:00:00Z"
-  version: "1.9.3"
+  timestamp: "2018-04-01T00:00:00Z"
+  version: "1.10.1"
 
   peer: true
 
@@ -86,12 +86,7 @@ build_tools_cluster:
         Action:
           - acm:ListCertificates
           - autoscaling:*
-          - cloudfront:*
-          - dynamodb:*
           - ec2:*
-          - elasticache:*
-          - iam:*
-          - rds:*
           - route53:*
           - s3:*
         Resource: ["*"]
