@@ -14,6 +14,10 @@ These releases may work but are not stable. Breaking changes will not cause majo
 remain `0` until a stable release), but will be noted here. These may be used in production (under the terms of
 [the license](./LICENSE.md)), but be careful.
 
+#### 0.0.11
+
+- [kube2iam](https://github.com/jtblin/kube2iam) for IAM roles in kops cluster
+
 #### 0.0.10
 
 - [kubernetes 1.10](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.10.md)

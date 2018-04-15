@@ -7,10 +7,7 @@ source "$(dirname ${BASH_SOURCE[0]})/common.sh"
 ###
 
 data_path="${1}"
-
-begin_color 6
-echo "data path: ${data_path}"
-close_color
+echo_color info "data path: ${data_path}"
 
 if [[ ! -d "${data_path}" ]];
 then
@@ -27,17 +24,13 @@ config_path="/etc/gitlab"
 
 if [[ -d "${config_path}" ]];
 then
-  begin_color 7
-  echo "config path exists"
-  close_color
+  echo_color progress "config path exists"
 
   config_secrets="${config_path}/gitlab-secrets.json"
 
   if [[ -f "${config_secrets}" ]];
   then
-    begin_color 3
-    echo "comparing existing secrets"
-    close_color
+    echo_color progress "comparing existing secrets"
 
     diff_secrets="$(diff /config/gitlab-secrets.json "${config_secrets}")"
 
@@ -55,6 +48,4 @@ cp -Lrv /config/* "${config_path}/"
 
 ls -lha "${config_path}"
 
-begin_color 5
-echo "config complete"
-close_color
+echo_color success "config complete"

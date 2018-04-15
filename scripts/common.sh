@@ -11,6 +11,23 @@ fi
 # common functions
 ###
 
+# echo with a color
+function echo_color() {
+  color="${1}"
+  shift
+  msg="${@}"
+
+  if [[ "${color}" =~ '^[0-9]+$' ]];
+  then
+    begin_color ${color}
+  else
+    begin_color $(std_color ${color})
+  fi
+
+  echo "${msg}"
+  close_color
+}
+
 # echo a confirmation
 # from https://stackoverflow.com/a/1885534/129032
 function echo_confirm() {
