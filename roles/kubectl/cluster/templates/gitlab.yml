@@ -19,6 +19,15 @@ spec:
       containers:
       - name: gitlab
         image: gitlab/gitlab-{{ build_tools_gitlab.edition }}:{{ build_tools_gitlab.version }}-{{ build_tools_gitlab.edition }}.0
+
+        # ports
+        ports:
+        - containerPort: 22
+          name: ssh
+        - containerPort: 80
+          name: http
+
+        # probes
         livenessProbe:
           httpGet:
             path: /-/liveness
@@ -31,81 +40,87 @@ spec:
             port: http
           initialDelaySeconds: 180
           periodSeconds: 90
-        ports:
-        - containerPort: 22
-          name: ssh
-        - containerPort: 80
-          name: http
+
+        # volumes
         volumeMounts: &gitlab_volumes
-        - name: cluster-scripts
-          mountPath: /scripts
+          - name: cluster-scripts
+            mountPath: /scripts
 {% for name, body in build_tools_gitlab.assets.iteritems() %}
-        - name: gitlab-assets
-          mountPath: /assets/{{body.path | default(name)}}
-          subPath: {{name}}
+          - name: gitlab-assets
+            mountPath: /assets/{{body.path | default(name)}}
+            subPath: {{name}}
 {% endfor %}
-        - name: gitlab-config
-          mountPath: /config
-        - name: gitlab-data
-          mountPath: /data
-        - name: gitlab-config
-          mountPath: /etc/gitlab
-          readOnly: false
+          - name: gitlab-config
+            mountPath: /config
+          - name: gitlab-data
+            mountPath: /data
+          - name: gitlab-etc
+            mountPath: /etc/gitlab
+            readOnly: false
+      
+      # init
       initContainers:
       - name: gitlab-init
-        image: busybox
+        image: apextoaster/kube:latest
+        env:
+          - name: DEBUG
+            value: "true"
         command:
-        - sh
-        - -c
-        - |
-          export DATA_PATH="{{secrets.gitlab.data}}";
-          if [[ ! -d "${DATA_PATH}" ]];
-          then
-            mkdir -p "${DATA_PATH}";
-          fi;
-          chown 998:998 "${DATA_PATH}";
-          df -h;
-          ls -lha /assets /config /data /etc/gitlab;
+          - /bin/bash
+        args:
+          - -c
+          - "/scripts/gitlab-init.sh {{ secrets.gitlab.data }}"
         volumeMounts: *gitlab_volumes
+
       nodeSelector:
         cluster: server
+
       terminationGracePeriodSeconds: 60
       volumes:
-      # cluster scripts dir
-      - name: cluster-scripts
-        configMap:
-          name: cluster-scripts
-          defaultMode: 0755
-      # gitlab assets dir
-      - name: gitlab-assets
-        secret:
-          secretName: gitlab-assets
-          items:
+        # cluster scripts dir
+        - name: cluster-scripts
+          configMap:
+            name: cluster-scripts
+            defaultMode: 0755
+        # gitlab assets dir
+        - name: gitlab-assets
+          secret:
+            secretName: gitlab-assets
+            items:
 {% for name, body in build_tools_gitlab.assets.iteritems() %}
-          - key: {{name}}
-            mode: {{body.mode}}
-            path: {{body.path | default(name)}}
+              - key: {{name}}
+                mode: {{body.mode}}
+                path: {{body.path | default(name)}}
 {% endfor %}
-      # gitlab config and secrets
-      - name: gitlab-config
-        secret:
-          secretName: gitlab-config
-          items:
+        # gitlab config and secrets
+        - name: gitlab-config
+          secret:
+            secretName: gitlab-config
+            items:
 {% for name, body in build_tools_gitlab.config.iteritems() %}
-          - key: {{name}}
-            mode: {{body.mode}}
-            path: {{body.path | default(name)}}
+              - key: {{name}}
+                mode: {{body.mode}}
+                path: {{body.path | default(name)}}
 {% endfor %}
 
   volumeClaimTemplates:
-  - metadata:
-      name: gitlab-data
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      resources:
-        requests:
-          storage: {{ build_tools_gitlab.disk }}Gi
+    - metadata:
+        name: gitlab-etc
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 4Gi
+
+    - metadata:
+        name: gitlab-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ build_tools_gitlab.disk }}Gi
 
 ---
 
@@ -123,14 +138,14 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
 spec:
   ports:
-  - name: ssh
-    protocol: TCP
-    port: 22
-    targetPort: ssh
-  - name: https
-    protocol: TCP
-    port: 443
-    targetPort: http
+    - name: ssh
+      protocol: TCP
+      port: 22
+      targetPort: ssh
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: http
   selector:
     k8s-svc: gitlab
   type: LoadBalancer
