@@ -80,7 +80,7 @@ The following tools are used locally to set up the cluster:
 - [aws](https://aws.amazon.com/cli/)
 - [bash](https://www.gnu.org/software/bash/) v4
 - [blackbox](https://github.com/StackExchange/blackbox)
-- [kops](https://github.com/kubernetes/kops) v1.8.2 (git-0ab8b57c2 or later)
+- [kops](https://github.com/kubernetes/kops) v1.9.0
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
 - [make](https://www.gnu.org/software/make/)
 - [terraform](https://www.terraform.io/) v0.11.2
