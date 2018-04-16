@@ -8,7 +8,9 @@ metadata:
     k8s-app: gitlab-runner
   annotations:
     iam.amazonaws.com/allowed-roles: |
-      []
+      [
+        "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-job"
+      ]
 
 ---
 
@@ -130,6 +132,7 @@ data:
 {% endfor %}
 
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -148,7 +151,7 @@ spec:
       labels:
         k8s-app: gitlab-runner
       annotations:
-        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:policy/{{ secrets.tags.project }}-gitlab-runner"
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-runner"
 
     spec:
       containers:

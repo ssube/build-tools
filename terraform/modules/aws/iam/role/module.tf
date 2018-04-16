@@ -8,9 +8,8 @@ variable "tag_project" {}
 # Role
 variable "role_name" {}
 
-variable "role_principals" {
-  type    = "list"
-  default = ["ec2.amazonaws.com"]
+variable "role_assume" {
+  type = "list"
 }
 
 variable "role_policy_count" {}

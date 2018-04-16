@@ -286,14 +286,35 @@ module "policy_gitlab_runner" {
   tag_project     = "${module.tags.tag_project}"
 }
 
+module "policy_gitlab_job" {
+  source = "{{ terraform_module }}/aws/iam/policy"
+
+  policy_name = "{{ secrets.tags.project }}-gitlab-job"
+
+  policy_actions = [
+    "s3:GetObject",
+    "s3:ListObjects",
+  ]
+
+  policy_resources = [
+    "arn:aws:s3:::${module.runner_cache.bucket_name}",
+    "arn:aws:s3:::${module.runner_cache.bucket_name}/*",
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
 # Roles
 module "role_cluster_dns" {
   source = "{{ terraform_module }}/aws/iam/role"
 
+  role_assume       = ["${module.cluster_k8s.nodes_role_arn}"]
   role_name         = "{{ secrets.tags.project }}-cluster-dns"
   role_policy_count = 1
   role_policy_arns  = ["${module.policy_cluster_dns.policy_arn}"]
-  role_principals   = ["ec2.amazonaws.com"]
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -304,10 +325,10 @@ module "role_cluster_dns" {
 module "role_cluster_scaler" {
   source = "{{ terraform_module }}/aws/iam/role"
 
+  role_assume       = ["${module.cluster_k8s.nodes_role_arn}"]
   role_name         = "{{ secrets.tags.project }}-cluster-scaler"
   role_policy_count = 1
   role_policy_arns  = ["${module.policy_cluster_scaler.policy_arn}"]
-  role_principals   = ["ec2.amazonaws.com"]
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -318,10 +339,10 @@ module "role_cluster_scaler" {
 module "role_gitlab_server" {
   source = "{{ terraform_module }}/aws/iam/role"
 
+  role_assume       = ["${module.cluster_k8s.nodes_role_arn}"]
   role_name         = "{{ secrets.tags.project }}-gitlab-server"
   role_policy_count = 1
   role_policy_arns  = ["${module.policy_gitlab_server.policy_arn}"]
-  role_principals   = ["ec2.amazonaws.com"]
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -332,10 +353,24 @@ module "role_gitlab_server" {
 module "role_gitlab_runner" {
   source = "{{ terraform_module }}/aws/iam/role"
 
+  role_assume       = ["${module.cluster_k8s.nodes_role_arn}"]
   role_name         = "{{ secrets.tags.project }}-gitlab-runner"
   role_policy_count = 1
   role_policy_arns  = ["${module.policy_gitlab_runner.policy_arn}"]
-  role_principals   = ["ec2.amazonaws.com"]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "role_gitlab_job" {
+  source = "{{ terraform_module }}/aws/iam/role"
+
+  role_assume       = ["${module.cluster_k8s.nodes_role_arn}"]
+  role_name         = "{{ secrets.tags.project }}-gitlab-job"
+  role_policy_count = 1
+  role_policy_arns  = ["${module.policy_gitlab_job.policy_arn}"]
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
@@ -382,15 +417,15 @@ output:
 
   users:
     bots:
-{% for bot in secrets.users.bots %}
+      # {% for bot in secrets.users.bots %}
       {{ bot.name }}:
         arn: ${module.bot_{{ bot.name }}.user_arn}
         id: ${module.bot_{{ bot.name }}.user_id}
-{% if bot.creds %}
+        # {% if bot.creds %}
         access_key: ${module.bot_{{ bot.name }}.access_key}
         secret_key: ${module.bot_{{ bot.name }}.secret_key}
-{% endif %}
-{% endfor %}
+        # {% endif %}
+      # {% endfor %}
 
   cache:
     hosts: ${jsonencode(module.cluster_cache.cache_hosts)}

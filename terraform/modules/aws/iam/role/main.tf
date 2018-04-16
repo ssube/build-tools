@@ -4,7 +4,16 @@ data "aws_iam_policy_document" "service_role_policy" {
 
     principals {
       type        = "Service"
-      identifiers = ["${var.role_principals}"]
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["${var.role_assume}"]
     }
   }
 }

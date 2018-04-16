@@ -84,9 +84,5 @@ build_tools_cluster:
     node:
       - Effect: Allow
         Action:
-          - acm:ListCertificates
-          - autoscaling:*
-          - ec2:*
-          - route53:*
-          - s3:*
+          - sts:AssumeRole
         Resource: ["*"]

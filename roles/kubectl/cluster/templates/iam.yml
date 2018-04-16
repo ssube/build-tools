@@ -73,7 +73,9 @@ spec:
             - "--auto-discover-default-role"
             - "--iptables=true"
             - "--host-ip=$(HOST_IP)"
+            - "--host-interface=weave"
             - "--node=$(NODE_NAME)"
+            - "--verbose"
 
           env:
             - name: HOST_IP

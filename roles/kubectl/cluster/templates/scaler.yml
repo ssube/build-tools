@@ -45,7 +45,7 @@ spec:
       labels:
         app: cluster-scaler
       annotations:
-        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:policy/{{ secrets.tags.project }}-cluster-scaler"
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-cluster-scaler"
 
     spec:
       containers:
