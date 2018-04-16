@@ -30,6 +30,7 @@ check_interval = 30
     image = "apextoaster/base"
     namespace = "gitlab-jobs"
     namespace_overwrite_allowed = ""
+
     privileged = true
     pull_policy = "always"
 
@@ -44,6 +45,9 @@ check_interval = 30
 
     [runners.kubernetes.node_selector]
       gitlab = "runner"
+
+    [runners.kubernetes.pod_annotations]
+      "iam.amazonaws.com/role" = "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-job"
 
     [[runners.kubernetes.volumes.empty_dir]]
       name = "build"

@@ -6,6 +6,11 @@ metadata:
   name: gitlab-jobs
   labels:
     k8s-app: gitlab-runner
+  annotations:
+    iam.amazonaws.com/allowed-roles: |
+      [
+        "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-job"
+      ]
 
 ---
 
@@ -18,7 +23,7 @@ metadata:
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: gitlab-runner-jobs
@@ -34,7 +39,7 @@ rules:
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: gitlab-runner-default
@@ -65,7 +70,7 @@ rules: []
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: gitlab-runner
@@ -127,7 +132,8 @@ data:
 {% endfor %}
 
 ---
-apiVersion: extensions/v1beta1
+
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gitlab-runner
@@ -139,10 +145,14 @@ spec:
   selector:
     matchLabels:
       k8s-app: gitlab-runner
+
   template:
     metadata:
       labels:
         k8s-app: gitlab-runner
+      annotations:
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-runner"
+
     spec:
       containers:
         - name: gitlab-runner

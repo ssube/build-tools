@@ -20,7 +20,7 @@ metadata:
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cluster-log
@@ -28,18 +28,20 @@ metadata:
   labels:
     k8s-app: cluster-log
     k8s-role: cluster-service
+
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
+
 subjects:
-- kind: ServiceAccount
-  name: cluster-log
-  namespace: cluster-service
+  - kind: ServiceAccount
+    name: cluster-log
+    namespace: cluster-service
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: cluster-log
@@ -47,11 +49,17 @@ metadata:
   labels:
     k8s-app: cluster-log
     k8s-role: cluster-service
+
 spec:
+  selector:
+    matchLabels:
+      k8s-app: cluster-log
+
   template:
     metadata:
       labels:
-        name: cluster-log
+        k8s-app: cluster-log
+
     spec:
       hostPID: true
       hostIPC: true

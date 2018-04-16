@@ -8,7 +8,7 @@ metadata:
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cluster-scaler
@@ -27,7 +27,7 @@ subjects:
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cluster-scaler
@@ -44,6 +44,9 @@ spec:
     metadata:
       labels:
         app: cluster-scaler
+      annotations:
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-cluster-scaler"
+
     spec:
       containers:
         - image: "gcr.io/google_containers/cluster-autoscaler:v1.0.3"

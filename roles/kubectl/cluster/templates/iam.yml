@@ -1,0 +1,96 @@
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-iam
+  namespace: cluster-service
+  labels:
+    k8s-app: cluster-iam
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-iam
+  labels:
+    k8s-app: cluster-iam
+
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces", "pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-iam
+  labels:
+    k8s-app: cluster-iam
+
+subjects:
+  - kind: ServiceAccount
+    name: cluster-iam
+    namespace: cluster-service
+
+roleRef:
+  kind: ClusterRole
+  name: cluster-iam
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cluster-iam
+  namespace: cluster-service
+  labels:
+    k8s-app: cluster-iam
+    k8s-role: cluster-service
+
+spec:
+  selector:
+    matchLabels:
+      k8s-app: cluster-iam
+
+  template:
+    metadata:
+      labels:
+        k8s-app: cluster-iam
+
+    spec:
+      hostNetwork: true
+      serviceAccountName: cluster-iam
+
+      containers:
+        - image: jtblin/kube2iam:latest
+          name: kube2iam
+          args:
+            - "--auto-discover-default-role"
+            - "--iptables=true"
+            - "--host-ip=$(HOST_IP)"
+            - "--host-interface=weave"
+            - "--node=$(NODE_NAME)"
+            - "--verbose"
+
+          env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          ports:
+            - containerPort: 8181
+              hostPort: 8181
+              name: http
+
+          securityContext:
+            privileged: true

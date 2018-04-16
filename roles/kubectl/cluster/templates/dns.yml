@@ -8,7 +8,7 @@ metadata:
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cluster-dns
@@ -16,18 +16,20 @@ metadata:
   labels:
     k8s-app: cluster-dns
     k8s-role: cluster-service
+
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
+
 subjects:
-- kind: ServiceAccount
-  name: cluster-dns
-  namespace: cluster-service
+  - kind: ServiceAccount
+    name: cluster-dns
+    namespace: cluster-service
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cluster-dns
@@ -35,13 +37,22 @@ metadata:
   labels:
     k8s-app: cluster-dns
     k8s-role: cluster-service
+
 spec:
+  selector:
+    matchLabels:
+      k8s-app: cluster-dns
+
   strategy:
     type: Recreate
+
   template:
     metadata:
       labels:
-        app: cluster-dns
+        k8s-app: cluster-dns
+      annotations:
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-cluster-dns"
+
     spec:
       containers:
         - name: cluster-dns

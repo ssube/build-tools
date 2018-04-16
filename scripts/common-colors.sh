@@ -22,6 +22,9 @@ function std_color() {
     progress)
       echo 5
       ;;
+    info)
+      echo 7
+      ;;
     start)
       ;&
     end)

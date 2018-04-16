@@ -44,7 +44,7 @@ build_tools_cluster:
   nodes:
     - name: server
       type: t2.medium
-      disk: 20
+      disk: 40
       size:
         min: 1
         max: 2
@@ -84,9 +84,5 @@ build_tools_cluster:
     node:
       - Effect: Allow
         Action:
-          - acm:ListCertificates
-          - autoscaling:*
-          - ec2:*
-          - route53:*
-          - s3:*
+          - sts:AssumeRole
         Resource: ["*"]

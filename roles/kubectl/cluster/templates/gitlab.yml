@@ -1,7 +1,7 @@
 ---
 
 kind: StatefulSet
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: gitlab
 spec:
@@ -15,6 +15,9 @@ spec:
       labels:
         k8s-app: gitlab
         k8s-svc: gitlab
+      annotations:
+        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-server"
+
     spec:
       containers:
       - name: gitlab
@@ -62,9 +65,7 @@ spec:
       initContainers:
       - name: gitlab-init
         image: "apextoaster/kube:master"
-        env:
-          - name: DEBUG
-            value: "true"
+
         command:
           - /bin/bash
         args:
@@ -159,7 +160,7 @@ metadata:
 type: Opaque
 data:
 {% for name, body in build_tools_gitlab.config.iteritems() %}
-  {{name}}: {{body.value | b64encode}}
+  {{ name }}: {{ body.value }}
 {% endfor %}
 
 ---
@@ -171,5 +172,5 @@ metadata:
 type: Opaque
 data:
 {% for name, body in build_tools_gitlab.assets.iteritems() %}
-  {{name}}: {{body.value | b64encode}}
+  {{ name }}: {{ body.value }}
 {% endfor %}
