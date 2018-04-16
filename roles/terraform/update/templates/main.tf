@@ -245,7 +245,12 @@ module "policy_cluster_scaler" {
   policy_name = "{{ secrets.tags.project }}-cluster-scaler"
 
   policy_actions = [
-    "autoscaling:*",
+    "autoscaling:DescribeAutoScalingGroups",
+    "autoscaling:DescribeAutoScalingInstances",
+    "autoscaling:DescribeLaunchConfigurations",
+    "autoscaling:DescribeTags",
+    "autoscaling:SetDesiredCapacity",
+    "autoscaling:TerminateInstanceInAutoScalingGroup",
   ]
 
   policy_resources = [

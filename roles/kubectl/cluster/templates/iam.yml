@@ -74,7 +74,6 @@ spec:
             - "--iptables=true"
             - "--host-ip=$(HOST_IP)"
             - "--host-interface=weave"
-            - "--namespace-restrictions"
             - "--node=$(NODE_NAME)"
             - "--verbose"
 
