@@ -78,7 +78,7 @@ module "cluster_network" {
 module "website_bucket" {
   source = "{{ terraform_module }}/aws/s3/site_bucket"
 
-  bucket_name   = "{{ secrets.dns.base }}"
+  bucket_name   = "{{ secrets.dns.site }}"
   bucket_origin = "${module.website_site.site_principal}"
 
   region_primary = "{{ secrets.region.global }}"
@@ -200,13 +200,33 @@ module "policy_backup" {
   tag_project     = "${module.tags.tag_project}"
 }
 
-module "policy_cluster_dns" {
+module "policy_cluster_dns_list" {
   source = "{{ terraform_module }}/aws/iam/policy"
 
-  policy_name = "{{ secrets.tags.project }}-cluster-dns"
+  policy_name = "{{ secrets.tags.project }}-cluster-dns-list"
+
+  policy_actions = [
+    "route53:ListHostedZones",
+  ]
+
+  policy_resources = [
+    "*",
+  ]
+
+  tag_account     = "${module.tags.tag_account}"
+  tag_environment = "${module.tags.tag_environment}"
+  tag_owner       = "${module.tags.tag_owner}"
+  tag_project     = "${module.tags.tag_project}"
+}
+
+module "policy_cluster_dns_update" {
+  source = "{{ terraform_module }}/aws/iam/policy"
+
+  policy_name = "{{ secrets.tags.project }}-cluster-dns-update"
 
   policy_actions = [
     "route53:ChangeResourceRecordSets",
+    "route53:ListResourceRecordSets",
   ]
 
   policy_resources = [
@@ -313,8 +333,12 @@ module "role_cluster_dns" {
 
   role_assume       = ["${module.cluster_k8s.nodes_role_arn}"]
   role_name         = "{{ secrets.tags.project }}-cluster-dns"
-  role_policy_count = 1
-  role_policy_arns  = ["${module.policy_cluster_dns.policy_arn}"]
+  role_policy_count = 2
+
+  role_policy_arns = [
+    "${module.policy_cluster_dns_list.policy_arn}",
+    "${module.policy_cluster_dns_update.policy_arn}",
+  ]
 
   tag_account     = "${module.tags.tag_account}"
   tag_environment = "${module.tags.tag_environment}"
