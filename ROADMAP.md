@@ -6,7 +6,6 @@ This roadmap is a list of high-level project goals in approximate order of prior
 
 Before the first stable release, the following need to be implemented:
 
-- [ ] kube2iam roles for kops cluster
 - [ ] kubeadm join for nodes without kubelet
 - [ ] document secrets
 - [ ] AWS account setup script & docs
@@ -22,3 +21,9 @@ Valuable features that need more planning:
 - [ ] terraform rename helper
   - renaming terraform resource is painful, but necessary
   - write a helper script to delete the resource from state and import it under a new name
+
+## Complete
+
+These features have been implemented:
+
+- [x] kube2iam roles for kops cluster
