@@ -98,8 +98,9 @@ metadata:
 
 type: Opaque
 data:
-{% for name, body in build_tools_gitlab.runner.config.iteritems() %}
-  {{name}}: {{body.value | b64encode}}
+{% for name in build_tools_gitlab.runner.config.keys() | list %}
+{% set body = build_tools_gitlab.runner.config[name] %}
+  {{ name }}: {{ body.value | b64encode }}
 {% endfor %}
 
 ---
@@ -113,7 +114,7 @@ metadata:
 
 type: Opaque
 data:
-  tags: {{runner_tags | b64encode}}
+  tags: {{ runner_tags | b64encode }}
 
 ---
 
@@ -127,8 +128,9 @@ metadata:
 
 type: Opaque
 data:
-{% for name, body in build_tools_gitlab.runner.secrets.iteritems() %}
-  {{name}}: {{body.value | b64encode}}
+{% for name in build_tools_gitlab.runner.secrets.keys() | list %}
+{% set body = build_tools_gitlab.runner.secrets[name] %}
+  {{ name }}: {{ body.value | b64encode }}
 {% endfor %}
 
 ---
@@ -182,8 +184,9 @@ spec:
           secret:
             secretName: gitlab-runner-config
             items:
-{% for name, body in build_tools_gitlab.runner.config.iteritems() %}
-              - key: {{name}}
-                mode: {{body.mode}}
-                path: {{body.path | default(name)}}
+{% for name in build_tools_gitlab.runner.config.keys() | list %}
+{% set body = build_tools_gitlab.runner.config[name] %}
+              - key: {{ name }}
+                mode: {{ body.mode }}
+                path: {{ body.path | default(name) }}
 {% endfor %}

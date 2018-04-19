@@ -48,10 +48,11 @@ spec:
         volumeMounts: &gitlab_volumes
           - name: cluster-scripts
             mountPath: /scripts
-{% for name, body in build_tools_gitlab.assets.iteritems() %}
+{% for name in build_tools_gitlab.assets.keys() | list %}
+{% set body = build_tools_gitlab.assets[name].path %}
           - name: gitlab-assets
-            mountPath: /assets/{{body.path | default(name)}}
-            subPath: {{name}}
+            mountPath: /assets/{{ body | default(name)}}
+            subPath: {{ name }}
 {% endfor %}
           - name: gitlab-config
             mountPath: /config
@@ -88,17 +89,19 @@ spec:
           secret:
             secretName: gitlab-assets
             items:
-{% for name, body in build_tools_gitlab.assets.iteritems() %}
-              - key: {{name}}
-                mode: {{body.mode}}
-                path: {{body.path | default(name)}}
+{% for name in build_tools_gitlab.assets.keys() | list %}
+{% set body = build_tools_gitlab.assets[name] %}
+              - key: {{ name }}
+                mode: {{ body.mode }}
+                path: {{ body.path | default(name) }}
 {% endfor %}
         # gitlab config and secrets
         - name: gitlab-config
           secret:
             secretName: gitlab-config
             items:
-{% for name, body in build_tools_gitlab.config.iteritems() %}
+{% for name in build_tools_gitlab.config.keys() | list %}
+{% set body = build_tools_gitlab.config[name] %}
               - key: {{name}}
                 mode: {{body.mode}}
                 path: {{body.path | default(name)}}
@@ -159,7 +162,8 @@ metadata:
   name: gitlab-config
 type: Opaque
 data:
-{% for name, body in build_tools_gitlab.config.iteritems() %}
+{% for name in build_tools_gitlab.config.keys() | list %}
+{% set body = build_tools_gitlab.config[name] %}
   {{ name }}: {{ body.value }}
 {% endfor %}
 
@@ -171,6 +175,7 @@ metadata:
   name: gitlab-assets
 type: Opaque
 data:
-{% for name, body in build_tools_gitlab.assets.iteritems() %}
+{% for name in build_tools_gitlab.assets.keys() | list %}
+{% set body = build_tools_gitlab.assets[name] %}
   {{ name }}: {{ body.value }}
 {% endfor %}
