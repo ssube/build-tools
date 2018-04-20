@@ -1,22 +1,9 @@
 ---
 
-- name: download dashboard
+- name: list scripts
   tags: &service-tags
     - service-create
     - service-update
-  get_url:
-    url: https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
-    dest: "{{output_dir.path}}/k8s-dashboard-deploy.yml"
-
-- name: apply dashboard
-  tags: *service-tags
-  environment:
-    KUBECTL_CONTEXT: "{{ context_path }}"
-    KUBECTL_RESOURCE_FILE: "{{ output_dir.path }}/k8s-dashboard-deploy.yml"
-  shell: kubectl --kubeconfig "{{ context_path }}" apply -f {{output_dir.path}}/k8s-dashboard-deploy.yml
-
-- name: list scripts
-  tags: *service-tags
   find:
     paths: "{{ build_tools_scripts.paths }}"
     patterns: 'Makefile,*.mk,*.sh'

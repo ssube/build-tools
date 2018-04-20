@@ -1,16 +1,175 @@
----
+# Copyright 2017 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Configuration to deploy release version of the Dashboard UI compatible with
+# Kubernetes 1.8.
+#
+# Modified change namespace, node placement, and simplify RBAC
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kubernetes-dashboard
+  name: cluster-dashboard
   labels:
-    k8s-app: kubernetes-dashboard
+    k8s-app: cluster-dashboard
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
 - kind: ServiceAccount
-  name: kubernetes-dashboard
-  namespace: kube-system
+  name: cluster-dashboard
+  namespace: cluster-service
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    k8s-app: cluster-dashboard
+  name: cluster-dashboard-certs
+  namespace: cluster-service
+type: Opaque
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: cluster-dashboard
+  name: cluster-dashboard
+  namespace: cluster-service
+
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cluster-dashboard-minimal
+  namespace: cluster-service
+
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["create"]
+
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["cluster-dashboard-key-holder", "cluster-dashboard-certs"]
+  verbs: ["get", "update", "delete"]
+
+- apiGroups: [""]
+  resources: ["configmaps"]
+  resourceNames: ["cluster-dashboard-settings"]
+  verbs: ["get", "update"]
+
+- apiGroups: [""]
+  resources: ["services"]
+  resourceNames: ["*"]
+  verbs: ["proxy"]
+
+- apiGroups: [""]
+  resources: ["services/proxy"]
+  resourceNames: ["*", "http:heapster:", "https:heapster:"]
+  verbs: ["get"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cluster-dashboard-minimal
+  namespace: cluster-service
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cluster-dashboard-minimal
+
+subjects:
+- kind: ServiceAccount
+  name: cluster-dashboard
+  namespace: cluster-service
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    k8s-app: cluster-dashboard
+  name: cluster-dashboard
+  namespace: cluster-service
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      k8s-app: cluster-dashboard
+  template:
+    metadata:
+      labels:
+        k8s-app: cluster-dashboard
+
+    spec:
+      containers:
+      - name: cluster-dashboard
+        image: k8s.gcr.io/kubernetes-dashboard-amd64:v1.8.3
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        args:
+          - --auto-generate-certificates
+        volumeMounts:
+        - name: cluster-dashboard-certs
+          mountPath: /certs
+        - mountPath: /tmp
+          name: tmp-volume
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /
+            port: https
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+      nodeSelector:
+        cluster: server
+      serviceAccountName: cluster-dashboard
+      volumes:
+      - name: cluster-dashboard-certs
+        secret:
+          secretName: cluster-dashboard-certs
+      - name: tmp-volume
+        emptyDir: {}
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: cluster-dashboard
+  name: cluster-dashboard
+  namespace: cluster-service
+spec:
+  ports:
+    - port: 443
+      targetPort: https
+  selector:
+    k8s-app: cluster-dashboard
+
+---

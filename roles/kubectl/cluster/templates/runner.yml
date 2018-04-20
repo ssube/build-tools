@@ -153,7 +153,8 @@ spec:
       labels:
         k8s-app: gitlab-runner
       annotations:
-        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-runner"
+        "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
+        "iam.amazonaws.com/role": "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-gitlab-runner"
 
     spec:
       containers:

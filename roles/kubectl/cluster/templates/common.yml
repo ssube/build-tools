@@ -4,3 +4,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: cluster-service
+  annotations:
+    iam.amazonaws.com/allowed-roles: |
+      [
+        "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-cluster-*"
+      ]

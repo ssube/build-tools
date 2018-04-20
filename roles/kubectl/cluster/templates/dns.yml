@@ -51,7 +51,8 @@ spec:
       labels:
         k8s-app: cluster-dns
       annotations:
-        iam.amazonaws.com/role: "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-cluster-dns"
+        "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
+        "iam.amazonaws.com/role": "arn:aws:iam::{{ secrets.tags.account }}:role/{{ secrets.tags.project }}-cluster-dns"
 
     spec:
       containers:

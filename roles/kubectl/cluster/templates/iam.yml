@@ -61,6 +61,8 @@ spec:
     metadata:
       labels:
         k8s-app: cluster-iam
+      annotations:
+        "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
 
     spec:
       hostNetwork: true
